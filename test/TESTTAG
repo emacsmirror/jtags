@@ -1,0 +1,31 @@
+
+d:/eget/my_lisp/initial_jtags/test/Bar.java,439
+public class BarBar1,0
+	public String toString(Bar.toString3,19
+	public static Bar instance(Bar.instance8,67
+	public void foo(Bar.foo13,119
+	public void foobar(Bar.foobar15,143
+	public void foozarg(Bar.foozarg17,170
+	public void afoo(Bar.afoo19,198
+	public void zoofoo(Bar.zoofoo21,223
+	public void print(Bar.print23,250
+	class Bar_InnBar.Bar_Inn28,289
+class Bar_ParBar_Par41,422
+	public void urk(Bar_Par.urk43,438
+
+d:/eget/my_lisp/initial_jtags/test/pkg/hupp/Axe.java,101
+public class Axe Axe8,65
+	public void print(Axe.print10,121
+	public void print(Axe.print14,151
+
+d:/eget/my_lisp/initial_jtags/test/pkg/hupp/Foo.java,98
+public class FooFoo5,32
+	public void print(Foo.print7,51
+	public void gurka(Foo.gurka13,116
+
+d:/eget/my_lisp/initial_jtags/test/pkg/hupp/Test.java,189
+public class TestTest3,19
+	public static void main(Test.main5,39
+	public void print(Test.print11,122
+	public Foo getFoo(Test.getFoo15,152
+	private static Foo foo_ Test.foo_20,197
