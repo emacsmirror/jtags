@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Foo extends java.io.IOException implements Serializable {
+public class    Foo extends java.io.IOException implements Serializable {
 
     private static Logger TLOG = Logger.getLogger(Foo.class.getName());
 
@@ -193,6 +193,14 @@ class Axe extends net.sf.jtags.Bar {
         aaa = 0;
         bbb = 0;
         ccc = 0;
+    }
+
+    public void create(List<Bar> bars, Integer period) {
+        Axe axe = new Axe(null);
+
+        for (Bar bar : bars) {
+            setBar(bar);
+        }
     }
 
     public net.sf.jtags.Bar setBar(Bar bar) {
