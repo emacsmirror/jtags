@@ -1,26 +1,25 @@
 ;;; jtags-extras.el --- jtags related functionality for Java development
 
-;; Copyright (C) 2007-2009 Johan Dykstrom
+;; Copyright (C) 2007-2011 Johan Dykstrom
 
-;; Author: Johan Dykstrom <jody4711-sourceforge@yahoo.se>
+;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Oct 2007
-;; Version: 0.2.0
-;; Keywords: java, tags, tools
+;; Version: 0.3.0
+;; Keywords: languages, tools
+;; URL: http://jtags.sourceforge.net
 
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2 of
-;; the License, or (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
-;; This program is distributed in the hope that it will be
-;; useful, but WITHOUT ANY WARRANTY; without even the implied
-;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;; PURPOSE.  See the GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public
-;; License along with this program; if not, write to the Free
-;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-;; MA 02111-1307 USA
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -34,9 +33,6 @@
 ;;                                  around or before point
 ;; - jtags-extras-organize-imports: order and format the import statements in
 ;;                                  the current source code file
-;;
-;; The latest version of jtags-extras can always be found at
-;; http://jtags.sourceforge.net.
 
 ;; Installation:
 
@@ -61,14 +57,6 @@
 ;;
 ;; - C-c + is bound to `jtags-extras-add-import'
 ;; - C-c = is bound to `jtags-extras-organize-imports'
-
-;;; Change Log:
-
-;;  0.2.0  2009-05-25  Added function for organizing imports. Added support
-;;                     for Java enums.
-;;  0.1.1  2008-10-03  Changed load method to autoload. Moved key bindings to
-;;                     jtags-mode-map.
-;;  0.1.0  2008-02-01  Initial version.
 
 ;;; Code:
 
@@ -125,8 +113,8 @@ Return nil if no regexp in LIST matches S."
 ;; Private variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst jtags-extras-version "0.2.0"
-  "The current version of jtags-extras.")
+(defconst jtags-extras-version "0.3.0"
+  "The current version of `jtags-extras'.")
 
 ;; ----------------------------------------------------------------------------
 ;; Main functions:
@@ -190,7 +178,7 @@ the last existing import statement, and insert a new import statement."
     (jtags-message "Definition=%s" definition)
 
     ;; Get existing imports
-    (let ((import-list (jtags-find-packages "import"))
+    (let ((import-list (jtags-find-imports))
           (class-import (concat (jtags-definition-package definition)
                                 "."
                                 (jtags-definition-class definition)))
@@ -208,7 +196,7 @@ the last existing import statement, and insert a new import statement."
         ;; If there are no import statements, but a package statement, insert
         ;; an extra newline to make things look better
         (if (and (= (length import-list) 2)
-                 (jtags-find-packages "package"))
+                 (jtags-find-package))
             (insert "\n"))
 
         ;; Insert import statement
@@ -217,7 +205,7 @@ the last existing import statement, and insert a new import statement."
         ;; If there are no import statements, and no package statement,
         ;; insert an extra newline to make things look better
         (if (and (= (length import-list) 1)
-                 (not (jtags-find-packages "package")))
+                 (not (jtags-find-package)))
             (insert "\n"))
 
         ;; Organize import statements, including the new one
@@ -396,7 +384,7 @@ that belong to the same group are sorted alphabetically within the group."
 
 ;;;###autoload
 (defun jtags-extras ()
-  "Load jtags-extras.")
+  "Load `jtags-extras'.")
 
 ;; ----------------------------------------------------------------------------
 
