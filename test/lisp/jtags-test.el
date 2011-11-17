@@ -1,26 +1,25 @@
 ;;; jtags-test.el --- code for testing jtags mode
 
-;; Copyright (C) 2006-2008 Johan Dykstrom
+;; Copyright (C) 2006-2011 Johan Dykstrom
 
-;; Author: Johan Dykstrom <jody4711-sourceforge@yahoo.se>
+;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Sep 2006
-;; Version: 0.96
-;; Keywords: java, tags, tools
+;; Version: 0.97
+;; Keywords: tools
+;; URL: http://jtags.sourceforge.net
 
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2 of
-;; the License, or (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
-;; This program is distributed in the hope that it will be
-;; useful, but WITHOUT ANY WARRANTY; without even the implied
-;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;; PURPOSE.  See the GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public
-;; License along with this program; if not, write to the Free
-;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-;; MA 02111-1307 USA
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -36,12 +35,6 @@
 ;; `tag-table-alist' to include Emacs Lisp files like this:
 ;;
 ;; (setq tag-table-alist '(("\\.\\(java\\|el\\)$" . "c:/java/jdk1.6.0/src")))
-
-;;; Change Log:
-
-;;  0.96  2008-10-03  Updated for jtags version 0.96.
-;;  0.95  2008-02-01  Updated for jtags version 0.95.
-;;  0.94  2006-10-03  Initial version.
 
 ;;; Code:
 
@@ -87,11 +80,9 @@ If the test fails, a message is printed in the \"*Messages*\" buffer. Example:
 
 \(assert-equal 1 '(car (list 1 2 3))) -> t
 \(assert-equal 2 '(max 1 2 3))        -> nil"
-
   (let ((result (safe-eval expression)))
-
     (if (equal expected result)
-        't
+        (message "PASSED")
       (message "FAILED on line %d: expected `%s' but was `%s'" (jtags-get-line) expected result)
       nil)))
 
@@ -99,9 +90,8 @@ If the test fails, a message is printed in the \"*Messages*\" buffer. Example:
   "Return non-nil if EXPRESSION evaluates to non-nil.
 If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
-
     (if result
-        't
+        (message "PASSED")
       (message "FAILED on line %d" (jtags-get-line))
       nil)))
 
@@ -109,9 +99,8 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
   "Return non-nil if EXPRESSION evaluates to nil.
 If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
-
     (if (not result)
-        't
+        (message "PASSED")
       (message "FAILED on line %d" (jtags-get-line))
       nil)))
 
@@ -142,15 +131,15 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 ;;; jtags-filter-list
 
 (assert-equal '("1" "123")
-              '(jtags-filter-list (lambda (x) (string-match "1" x)) '("1" "2" "3" "123")))
+              '(jtags-filter-list '("1" "2" "3" "123") (lambda (x) (string-match "1" x))))
 (assert-equal '("123")
-              '(jtags-filter-list (lambda (x) (string-match "123" x)) '("1" "2" "3" "123")))
+              '(jtags-filter-list '("1" "2" "3" "123") (lambda (x) (string-match "123" x))))
 (assert-equal '()
-              '(jtags-filter-list (lambda (x) (string-match "4" x)) '("1" "2" "3" "123")))
+              '(jtags-filter-list '("1" "2" "3" "123") (lambda (x) (string-match "4" x))))
 (assert-equal '("1" "2" "3" "123")
-              '(jtags-filter-list (lambda (x) (string-match "" x)) '("1" "2" "3" "123")))
+              '(jtags-filter-list '("1" "2" "3" "123") (lambda (x) (string-match "" x))))
 (assert-equal '(4 5 6)
-              '(jtags-filter-list (lambda (x) (> x 3)) '(1 2 3 4 5 6)))
+              '(jtags-filter-list '(1 2 3 4 5 6) (lambda (x) (> x 3))))
 
 ;;; jtags-rotate-left
 
@@ -163,25 +152,19 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 (assert-equal '(2 3 1)
               '(jtags-rotate-left '(1 2 3)))
 
-;;; jtags-line-to-point
-
-(assert-equal 1   '(jtags-point-to-line (jtags-line-to-point 1)))
-(assert-equal 10  '(jtags-point-to-line (jtags-line-to-point 10)))
-(assert-equal 100 '(jtags-point-to-line (jtags-line-to-point 100)))
-
 ;;; jtags-file-name-directory
 
 (assert-equal "c:/"                   '(jtags-file-name-directory "c:/"))
 (assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java"))
 (assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java/"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java/junit3.8.2/.."))
-(assert-equal "c:/Java/junit3.8.2/"   '(jtags-file-name-directory "c:/Java/junit3.8.2"))
-(assert-equal "c:/Java/junit3.8.2/"   '(jtags-file-name-directory "c:/Java/junit3.8.2/junit.jar"))
+(assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java/junit4.8.2/.."))
+(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "c:/Java/junit4.8.2"))
+(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "c:/Java/junit4.8.2/junit.jar"))
 (assert-equal "c:/"                   '(jtags-file-name-directory "C:\\"))
 (assert-equal "c:/Java/"              '(jtags-file-name-directory "C:\\Java"))
 (assert-equal "c:/Java/"              '(jtags-file-name-directory "C:\\Java\\"))
-(assert-equal "c:/Java/junit3.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit3.8.2\\"))
-(assert-equal "c:/Java/junit3.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit3.8.2\\junit.jar"))
+(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\"))
+(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\junit.jar"))
 
 ;; FAILS in Windows
 (assert-equal "/"             '(jtags-file-name-directory "/"))
@@ -198,6 +181,9 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
               '(jtags-get-class-list-iter '("String")))
 (assert-equal '("String" "Object" "Integer" "Number" "Object")
               '(jtags-get-class-list-iter '("String" "Integer")))
+(assert-equal '("JComboBox" "JComponent" "Container" "Component" "Object"
+                "JScrollPane" "JComponent" "Container" "Component" "Object")
+              '(jtags-get-class-list-iter '("JComboBox" "JScrollPane")))
 
 ;;; jtags-do-get-class-list
 
@@ -211,6 +197,13 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
               '(jtags-do-get-class-list "BufferedReader"))
 (assert-equal '("JFrame" "Frame" "Window" "Container" "Component" "Object")
               '(jtags-do-get-class-list "JFrame"))
+
+(assert-equal '("String" "Object")
+              '(jtags-do-get-class-list "String" '("java.lang.*")))
+(assert-equal '("Double" "Number" "Object")
+              '(jtags-do-get-class-list "Double" '("java.lang.*")))
+(assert-equal '("HashSet" "AbstractSet" "AbstractCollection" "Object")
+              '(jtags-do-get-class-list "HashSet" '("java.lang.*" "java.util.ArrayList" "java.util.HashSet")))
 
 ;; FAILS - returns ("Double" "Arc2D" "RectangularShape" "Object")
 ;;         need package name to know which "Double" user wants
@@ -262,36 +255,36 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 
 ;; OK in XEmacs
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ("\\.java$" . "c:/Windows"))))
-  (assert-equal '("c:/Temp/TAGS") '(jtags-buffer-tag-table-list)))
+      (tag-table-alist '(("\\.el$" . "c:/Java") ("\\.java$" . "c:/Windows"))))
+  (assert-equal '("c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ("\\.java$" . "c:/Windows") ("\\.el$" . "c:/Java"))))
-  (assert-equal '("c:/Temp/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
+      (tag-table-alist '(("\\.el$" . "c:/") ("\\.java$" . "c:/Windows") ("\\.el$" . "c:/Java"))))
+  (assert-equal '("c:/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ("\\.el$" . "c:/Java"))))
-  (assert-equal '("c:/Temp/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
+      (tag-table-alist '(("\\.el$" . "c:/") ("\\.el$" . "c:/Java"))))
+  (assert-equal '("c:/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
       (tag-table-alist '(("\\.java$" . "c:/Windows"))))
   (assert-equal nil '(ignore-errors (jtags-buffer-tag-table-list))))
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ("\\.java$" . "c:/Windows")))
+      (tag-table-alist '(("\\.el$" . "c:/") ("\\.java$" . "c:/Windows")))
       (buffer-tag-table "c:/Java"))
-  (assert-equal '("c:/Java/TAGS" "c:/Temp/TAGS") '(jtags-buffer-tag-table-list)))
+  (assert-equal '("c:/Java/TAGS" "c:/TAGS") '(jtags-buffer-tag-table-list)))
 
 (defun return-true () 't)
 (defun return-false () nil)
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ((return-true) . "c:/Java") ("\\.java$" . "c:/Windows"))))
-  (assert-equal '("c:/Temp/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
+      (tag-table-alist '(("\\.el$" . "c:/") ((return-true) . "c:/Java") ("\\.java$" . "c:/Windows"))))
+  (assert-equal '("c:/TAGS" "c:/Java/TAGS") '(jtags-buffer-tag-table-list)))
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
-      (tag-table-alist '(("\\.el$" . "c:/Temp") ((return-false) . "c:/Java") ("\\.java$" . "c:/Windows"))))
-  (assert-equal '("c:/Temp/TAGS") '(jtags-buffer-tag-table-list)))
+      (tag-table-alist '(("\\.el$" . "c:/") ((return-false) . "c:/Java") ("\\.java$" . "c:/Windows"))))
+  (assert-equal '("c:/TAGS") '(jtags-buffer-tag-table-list)))
 
 ;;; jtags-lookup-class-members
 
@@ -349,13 +342,13 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
                      (string-equal (jtags-definition-name definition) "cury")
                      (string-equal (jtags-definition-type definition) "double"))))
 
-;; FAILS with JDK > 1.4.x (type is "E")
+;; FAILS with JDK < 1.5.x (type is "Object")
 (assert-true '(let ((definition (jtags-lookup-identifier "Iterator" "next" '("java.io.*" "java.util.Iterator" "java.lang.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.util")
                      (string-equal (jtags-definition-class definition) "Iterator")
                      (string-equal (jtags-definition-name definition) "next")
-                     (string-equal (jtags-definition-type definition) "Object"))))
+                     (string-equal (jtags-definition-type definition) "E"))))
 
 (assert-false '(jtags-lookup-identifier "FooBar"))
 (assert-false '(jtags-lookup-identifier "String" "foo"))
@@ -379,57 +372,47 @@ public final class Integer Integer41,1265
 ;; <<< TEST DATA
 
 (assert-equal '("class" 41 1265)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" nil bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" nil bound)))
 (assert-equal '("int" 606 21687)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "count" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "count" bound)))
 (assert-equal '("char" 607 21700)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "tjipp" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "tjipp" bound)))
 (assert-equal '("int" 46 1445)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "MIN_VALUE" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "MIN_VALUE" bound)))
 (assert-equal '("String" 115 4262)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "toString" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "toString" bound)))
 (assert-equal '("int" 541 19127)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "parseInt" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "parseInt" bound)))
 (assert-equal '("Integer" 632 22662)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "Integer" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "Integer" bound)))
 (assert-equal '("String" 2163 85659)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "split" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "split" bound)))
 (assert-equal '("double" 70 2325)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "cury" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "cury" bound)))
 
 ;; FAILS in GNU Emacs 21 (ignore class member "curx")
 (assert-equal '("double" 70 2325)
-              '(progn
-                 (let ((bound (point)))
-                   (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
-                   (jtags-get-tagged-type-line-pos "Integer" "curx" bound))))
+              '(let ((bound (point)))
+                 (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
+                 (jtags-get-tagged-type-line-pos "Integer" "curx" bound)))
 
 ;;; jtags-right-package-p
 
@@ -454,26 +437,20 @@ public final class Integer Integer41,1265
 (assert-true '(jtags-right-package-p "/usr/local/jdk/src/java/lang/Double.java"
                                      '("java.awt.Image" "java.io.*" "java.lang.*")))
 
-;;; jtags-update-tags-files
-
-(jtags-update-tags-files)
-
 ;;; jtags-update-tags-file
 
-(jtags-update-tags-file "c:/java/junit3.8.2/src")
-(jtags-update-tags-file "c:/java/junit3.8.2/src/A_TAGS_FILE")
+(jtags-update-tags-file "c:/java/junit4.8.2/src")
+(jtags-update-tags-file "c:/java/junit4.8.2/src/A_TAGS_FILE")
 
 ;;; jtags-find-identifier-backward
 
 ;; >>> TEST DATA
 foo
-foo().bar   ()
-System.out.println(bar)
-Class.forName("Foo")
+foo().bar
+System.out.println
 "println"
 ;; toString
 Class.
-foo[17]
 ;; <<< TEST DATA
 
 (assert-equal '"foo"
@@ -482,32 +459,32 @@ foo[17]
               '(progn (goto-test ";;; jtags-find-identifier-backward" 4 't) (jtags-find-identifier-backward)))
 (assert-equal '"println"
               '(progn (goto-test ";;; jtags-find-identifier-backward" 5 't) (jtags-find-identifier-backward)))
-(assert-equal '"forName"
-              '(progn (goto-test ";;; jtags-find-identifier-backward" 6 't) (jtags-find-identifier-backward)))
 (assert-equal '"#stringliteral#"
-              '(progn (goto-test ";;; jtags-find-identifier-backward" 7 't) (jtags-find-identifier-backward)))
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 6 't) (jtags-find-identifier-backward)))
 (assert-equal '"toString"
-              '(progn (goto-test ";;; jtags-find-identifier-backward" 8 't) (jtags-find-identifier-backward)))
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 7 't) (jtags-find-identifier-backward)))
 (assert-equal '"Class"
-              '(progn (goto-test ";;; jtags-find-identifier-backward" 9 't) (jtags-find-identifier-backward)))
-(assert-equal '"foo"
-              '(progn (goto-test ";;; jtags-find-identifier-backward" 10 't) (jtags-find-identifier-backward)))
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 8 't) (jtags-find-identifier-backward)))
 
 ;;; jtags-parse-java-line
 
 ;; >>> TEST DATA
 toString().substring(1, 2).length
-aa_a .	bb_b()  .   cc_c(pp1, qq2).ddd.ee_e      ()
+aa_a .	bb_b()  .   cc_c(pp1, qq2).ddd.ee_e
 "jtags" . toString
 System.out.println(System.getProperty
-System.out.println(bar)
-Class.forName("Foo")
+Class.forName
 "println"
-;; toString().toUpperCase()
-foo[17].toString()
+;; toString().toUpperCase
+foo[17].toString
 Class.
 ;; This comment ends with a period.
-foo.split()
+foo.split
+;; This is also a comment
+bar.split
+;; The next expression is split over two lines
+aaa().bbb().
+ccc().ddd
 ;; <<< TEST DATA
 
 (assert-equal '("toString" "substring" "length")
@@ -518,26 +495,28 @@ foo.split()
               ' (progn (goto-test ";;; jtags-parse-java-line" 5 't) (jtags-parse-java-line)))
 (assert-equal '("System" "getProperty")
               '(progn (goto-test ";;; jtags-parse-java-line" 6 't) (jtags-parse-java-line)))
-(assert-equal '("System" "out" "println")
-              '(progn (goto-test ";;; jtags-parse-java-line" 7 't) (jtags-parse-java-line)))
 (assert-equal '("Class" "forName")
-              '(progn (goto-test ";;; jtags-parse-java-line" 8 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 7 't) (jtags-parse-java-line)))
 (assert-equal '("#stringliteral#")
-              '(progn (goto-test ";;; jtags-parse-java-line" 9 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 8 't) (jtags-parse-java-line)))
 (assert-equal '("toString" "toUpperCase")
-              '(progn (goto-test ";;; jtags-parse-java-line" 10 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 9 't) (jtags-parse-java-line)))
 (assert-equal '("foo" "toString")
-              '(progn (goto-test ";;; jtags-parse-java-line" 11 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 10 't) (jtags-parse-java-line)))
 (assert-equal '("Class")
-              '(progn (goto-test ";;; jtags-parse-java-line" 12 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 11 't) (jtags-parse-java-line)))
 (assert-equal '("foo" "split")
-              '(progn (goto-test ";;; jtags-parse-java-line" 14 't) (jtags-parse-java-line)))
+              '(progn (goto-test ";;; jtags-parse-java-line" 13 't) (jtags-parse-java-line)))
+(assert-equal '("bar" "split")
+              '(progn (goto-test ";;; jtags-parse-java-line" 15 't) (jtags-parse-java-line)))
+(assert-equal '("aaa" "bbb" "ccc" "ddd")
+              '(progn (goto-test ";;; jtags-parse-java-line" 18 't) (jtags-parse-java-line)))
 
-;;; jtags-find-packages
+;;; jtags-find-package
 
 ;; >>> TEST DATA
-package foo.bar.util.config;
 ;; package foo.bar.util.html;
+package foo.bar.util.config;
 
 import java.util.HashMap;
 "import java.util.List;"
@@ -549,26 +528,71 @@ import foo.bar.util.  connection.  *  ;
 import foo.bar.util.connection.*;
 ;; <<< TEST DATA
 
-(assert-equal '("foo.bar.util.config")
-              '(jtags-find-packages "package"))
-(assert-equal '("foo.bar.util.connection.*"
-                "foo.bar.server.management.*"
-                "foo.bar.server.base.ConnectionMgr"
-                "foo.bar.event.EventHandler"
+(assert-equal "foo.bar.util.config"
+              '(jtags-find-package))
+(assert-equal '("foo.bar.util.config.*"
+                "java.lang.*"
                 "java.util.HashMap"
-                "foo.bar.util.config.*"
-                "java.lang.*")
-              '(jtags-find-packages "import"))
+                "foo.bar.event.EventHandler"
+                "foo.bar.server.base.ConnectionMgr"
+                "foo.bar.server.management.*"
+                "foo.bar.util.connection.*")
+              '(jtags-find-imports (jtags-find-package)))
 
 ;;; jtags-find-javadoc
 
 (assert-true '(jtags-find-javadoc "String" "java/lang/" jtags-javadoc-root-list))
 (assert-true '(jtags-find-javadoc "IOException" "java/io/" jtags-javadoc-root-list))
-(assert-true '(jtags-find-javadoc "TestCase" "junit/framework/" jtags-javadoc-root-list))
+(assert-true '(jtags-find-javadoc "Assert" "org/junit/" jtags-javadoc-root-list))
 
-(assert-false '(jtags-find-javadoc "FooBar" "junit/framework/" jtags-javadoc-root-list))
-(assert-false '(jtags-find-javadoc "TestCase" "junit/awtui/" jtags-javadoc-root-list))
-(assert-false '(jtags-find-javadoc "TestCase" "junit/foo/" jtags-javadoc-root-list))
+(assert-false '(jtags-find-javadoc "FooBar" "org/junit/" jtags-javadoc-root-list))
+(assert-false '(jtags-find-javadoc "Assert" "org/foo/" jtags-javadoc-root-list))
+
+;;; jtags-extras-match-index
+
+(assert-equal 0   '(jtags-extras-match-index '("^java\\.") "java.util.*"))
+(assert-equal nil '(jtags-extras-match-index '("^java\\.") "javax.swing.JList"))
+(assert-equal 1   '(jtags-extras-match-index '("^java\\." "^javax\\.") "javax.swing.JList"))
+(assert-equal 0   '(jtags-extras-match-index '("^java\\." "^javax\\.") "java.util.List"))
+(assert-equal 3   '(jtags-extras-match-index '("^java\\." "^javax\\." "-" "^org\\.") "org.xml.sax.*"))
+(assert-equal nil '(jtags-extras-match-index '("^java\\." "^javax\\." "-" "^org\\.") "com.foo.bar.*"))
+
+;;; jtags-extras-sort-import-predicate
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\.")))
+                 (jtags-extras-sort-import-predicate "java.util.*" "javax.swing.*")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.*" "java.util.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\.")))
+                 (jtags-extras-sort-import-predicate "java.util.*" "javax.swing.*")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.*" "java.util.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.*" "org.xml.sax.*")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "org.xml.sax.*" "javax.swing.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "org.xml.sax.*" "com.foo.bar.*")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "com.foo.bar.*" "org.xml.sax.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.*" "zzzzz")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "zzzzz" "javax.swing.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "java.sql.*" "java.text.*")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "java.text.*" "java.sql.*")))
+
+(assert-true  '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.JButton" "javax.swing.JList")))
+(assert-false '(let ((jtags-extras-import-order-list '("^java\\." "^javax\\." "-" "^org\\.")))
+                 (jtags-extras-sort-import-predicate "javax.swing.JList" "javax.swing.JButton")))
 
 ;; ----------------------------------------------------------------------------
 
