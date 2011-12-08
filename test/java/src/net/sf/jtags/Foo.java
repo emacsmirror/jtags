@@ -21,6 +21,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xml.sax.XMLReader;
+
 public class    Foo extends java.io.IOException implements Serializable {
 
     private static Logger TLOG = Logger.getLogger(Foo.class.getName());
@@ -86,6 +88,18 @@ public class    Foo extends java.io.IOException implements Serializable {
         IOException ioe = new IOException(this.toString());
         return ((Exception) super.getCause()).toString();
     }
+
+    /**
+     * This method has some javadoc comments.
+     *
+     * @param name The name.
+     * @return The reader.
+     */
+    public XMLReader getReader(String name)
+    {
+        XMLReader reader = null;
+        return reader;
+    }
 }
 
 class Bar {
@@ -144,6 +158,7 @@ class Bar {
      */
     public List<String> getStringList(List<String> in) {
         java.util.List<String> myList = in;
+        // Looking up Map should result in java.util.Map, not javax.swing.text.html.Map
         Map<Integer, String> myMap = new HashMap<Integer, String>();
         Iterator<String> iter = in.iterator();
         theList = in;
@@ -195,6 +210,7 @@ class Axe extends net.sf.jtags.Bar {
         ccc = 0;
     }
 
+    // Looking up List should result in java.util.List, not java.awt.List
     public void create(List<Bar> bars, Integer period) {
         Axe axe = new Axe(null);
 
