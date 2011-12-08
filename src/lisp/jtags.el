@@ -93,23 +93,14 @@
 ;; you are running Linux, you can start Emacs using the sudo command once, to
 ;; create the tags table files.
 ;;
-;; If you want to use jtags mode to display Javadoc files in your web browser,
-;; you need to go through some additional steps:
-;;
-;; Download and unzip the Javadoc files for the JDK and other products you
-;; use, e.g. JUnit.
-;;
-;; Configure the variable `jtags-javadoc-root-list' in your init file. It
-;; should be a list of directories to search for Javadoc files. The Javadoc
-;; root directory is where the file "index.html" resides, for example:
-;;
-;; (setq jtags-javadoc-root-list '("c:/java/jdk1.6.0/docs/api"
-;;                                 "c:/projects/tetris/docs/api"))
-;;
 ;; The shell command that runs when you update tags table files is defined in
 ;; the variable `jtags-etags-command'. Change this variable to run a specific
 ;; version of etags, or to include other source code files in the tags table
 ;; files.
+;;
+;; To display Javadoc for third party libraries, you need to customize the
+;; `jtags-javadoc-root-alist' and add Javadoc root URLs for these libraries.
+;; Package jtags now supports both http URLs and file URLs.
 ;;
 ;; If you want to use the jtags submenu, set `jtags-display-menu-flag' to
 ;; non-nil. If this variable is non-nil, the jtags submenu will be displayed
@@ -204,12 +195,28 @@
 ;; Other stuff:
 
 (defcustom jtags-javadoc-root-list nil
-  "*List of directories to search for Javadoc files.
-Make this variable a list of the root directories for the Javadoc files you
-want to browse using jtags. The Javadoc root directory is the directory where
-the generated \"index.html\" file resides."
+  "This variable has been deprecated and will be removed."
   :type '(repeat file)
   :group 'jtags)
+
+(defcustom jtags-javadoc-root-alist
+  '(("^java\\." . "http://download.oracle.com/javase/6/docs/api")
+    ("^javax\\." . "http://download.oracle.com/javase/6/docs/api")
+    ("^org\\.w3c\\.dom" . "http://download.oracle.com/javase/6/docs/api")
+    ("^org\\.xml\\.sax" . "http://download.oracle.com/javase/6/docs/api"))
+  "*Alist of package patterns vs corresponding Javadoc root URLs.
+Each element looks like (REGEXP . URL) where REGEXP is a regexp
+that matches a group of imports, and URL is the Javadoc root URL
+for that group of imports. The Javadoc root URL is where the
+\"index.html\" file resides."
+  :type '(alist :key-type regexp :value-type string)
+  :group 'jtags)
+
+(defcustom jtags-browse-url-function 'browse-url
+  "*A function used by `jtags-browse-url' to display URLs.
+This function will be called with one argument: the URL to display."
+  :group 'jtags
+  :type 'function)
 
 (defcustom jtags-etags-command
   (if (eq system-type 'windows-nt)
@@ -344,15 +351,6 @@ subexp   description
 6        The line to start searching at
 7        The char to start searching at")
 
-(defvar jtags-javadoc-frameset
-  (let ((temp-dir (file-name-as-directory (if (featurep 'xemacs)
-                                              (temp-directory)
-                                            temporary-file-directory))))
-    (concat temp-dir "jtags_frameset_" (user-login-name) ".html"))
-  "The file name of the jtags Javadoc frameset.
-Included with jtags is a frameset file. This file will be altered in order to
-give the fancy Javadocs frames when viewing documentation for a Java class.")
-
 (defvar jtags-last-possible-completions nil
   "Holds a list of the text to be replaced and possible completions.
 This variable is used to circle completions.")
@@ -480,17 +478,16 @@ onto a ring and may be popped back to with \\[pop-tag-mark]."
 (defun jtags-show-documentation ()
   "Look up the identifier around or before point, and show its Javadoc.
 
-Find the definition of the identifier in the tags table files. Find its
-Javadoc documentation using the Javadoc root list, and display it in the
-system browser.
+Find the definition of the identifier in the tags table files.
+Find the Javadoc for the identifier using the Javadoc root list,
+and display it in the configured browser.
 
-See also variable `jtags-javadoc-root-list'."
+See also variable `jtags-javadoc-root-alist'."
   (interactive)
   (let ((definition (jtags-find-tag)))
     (if (null definition)
         (message "Tag not found!")
-      (if jtags-javadoc-root-list
-        (jtags-browse-url definition)))))
+      (jtags-browse-url definition))))
 
 (defun jtags-member-completion ()
   "Look up a partly typed identifier around or before point, and complete it.
@@ -592,7 +589,7 @@ in, with the innermost class first and the outermost class last."
           (jtags-filter-class-list (cdr class-list))))))
 
 (defun jtags-find-end-of-class (start)
-  "Find end of class that starts at position START."
+  "Find end of class with start position START."
   (save-excursion
     (goto-char start)
     (re-search-forward "{")
@@ -1477,94 +1474,54 @@ current buffer. The package names may, or may not end with \".*\"."
       (jtags-uniqify-list (nreverse list)))))
 
 ;; ----------------------------------------------------------------------------
-;; HTML functions:
+;; Functions for showing Javadoc:
 ;; ----------------------------------------------------------------------------
 
 (defun jtags-find-javadoc (class package javadoc-root-list)
-  "Find the Javadoc file for CLASS in PACKAGE.
-Search all directories in JAVADOC-ROOT-LIST for a HTML file that matches CLASS
-and PACKAGE, and return (file name . root directory) for the first one found."
+  "This method has been deprecated, and will be removed."
+  (message "Variable jtags-javadoc-root-list has been deprecated, use jtags-javadoc-root-alist instead.")
   (dolist (javadoc-root javadoc-root-list)
     (setq javadoc-root (jtags-file-name-directory javadoc-root))
     (jtags-message "Normalized javadoc-root: `%s'" javadoc-root)
 
-    (let ((javadoc-file (concat javadoc-root package class ".html")))
+    (let ((javadoc-file (concat javadoc-root package "/" class ".html")))
       (jtags-message "Looking for Javadoc file `%s'" javadoc-file)
       (if (file-regular-p javadoc-file)
-          (return (cons javadoc-file javadoc-root))))))
+          (return javadoc-file)))))
+
+(defun jtags-browse-url-old (package-name class-name)
+  "This method has been deprecated, and will be removed."
+  (setq package-name (replace-regexp-in-string "\\\." "/" package-name))
+  (let ((javadoc-file (jtags-find-javadoc class-name package-name jtags-javadoc-root-list)))
+    (if (not javadoc-file)
+        (message "Documentation not found!")
+      (message "Displaying URL %s" javadoc-file)
+      (funcall jtags-browse-url-function javadoc-file))))
 
 (defun jtags-browse-url (definition)
-  "Show Javadoc for the class in DEFINITION in the system browser.
-Use variable `jtags-javadoc-root-list' to find Javadoc for the class, generate
-a frameset file with links to the Javadoc file found, and show the frameset
-file in the system browser."
+  "Show Javadoc for the class in DEFINITION in the configured browser.
+Use variable `jtags-javadoc-root-alist' to find the Javadoc URL for the
+class, and display it in the configured browser."
   (jtags-message "Definition=%S" definition)
-  (let ((package-name (jtags-definition-package definition)))
-
+  (let ((package-name (jtags-definition-package definition))
+        (class-name (jtags-definition-class definition)))
     (if (null package-name)
-        (setq package-name "")
-      (setq package-name (concat (replace-regexp-in-string "\\\." "/" package-name) "/")))
+        (setq package-name ""))
+    (jtags-message "Looking for Javadoc for class `%s' in package `%s'" class-name package-name)
+    (if jtags-javadoc-root-list
+        (jtags-browse-url-old package-name class-name)
 
-    (let ((found-javadoc (jtags-find-javadoc (jtags-definition-class definition)
-                                             package-name
-                                             jtags-javadoc-root-list)))
-      (if (not found-javadoc)
+    ;; Find matching javadoc root
+    (let ((javadoc-root (assoc-default package-name jtags-javadoc-root-alist 'string-match)))
+      (if (not javadoc-root)
           (message "Documentation not found!")
-        (jtags-message "Launching browser with file `%s'" (car found-javadoc))
-        (jtags-prepare-javadoc-frameset (car found-javadoc)
-                                        (cdr found-javadoc))
-        (browse-url jtags-javadoc-frameset)))))
-
-(defun jtags-prepare-javadoc-frameset (java-file javadoc-root)
-  "Prepare the Javadoc frameset file `jtags-javadoc-frameset'.
-Insert link to Javadoc page for the Java identifier the user is interested in."
-  (save-excursion
-    (if (not (file-writable-p jtags-javadoc-frameset))
-        (error "Cannot create Javadoc frameset file: permission denied, %s"
-               jtags-javadoc-frameset)
-
-      ;; Initialize Javadoc frameset file
-      (jtags-init-javadoc-frameset javadoc-root)
-      (goto-char (point-min))
-
-      (if (not (string-match "^/" java-file))
-          (setq java-file (concat "/" java-file)))
-
-      (search-forward "</FRAMESET>" nil t)
-      (if (re-search-forward "src=\".+\" name" nil t)
-          (replace-match (concat "src=\"file://" java-file "\" name")))
-      (if (re-search-forward "<A HREF=\".+\">Non" nil t)
-          (replace-match (concat " <A HREF=\"file://" java-file "\">Non")))
-      (save-buffer)
-      (kill-buffer (current-buffer))
-      (jtags-message "Successfully created `%s'" jtags-javadoc-frameset))))
-
-(defun jtags-init-javadoc-frameset (javadoc-root)
-  "Initalize the Javadoc frameset file using the given JAVADOC-ROOT.
-Javadoc usually creates a file index.html that refers to the files
-overview-frame.html, allclasses-frame.html, and overview-summary.html."
-  (let ((source-file (concat javadoc-root "index.html")))
-    (if (not (file-exists-p source-file))
-        (error "Cannot set up Javadoc frameset file: file not found, %s" source-file)
-
-      (copy-file source-file jtags-javadoc-frameset 'OK-IF-ALREADY-EXISTS)
-
-      ;; Load frameset file if not loaded. Otherwise, revert frameset buffer.
-      (let ((frameset-buffer (get-buffer (file-name-nondirectory jtags-javadoc-frameset))))
-        (if (null frameset-buffer)
-            (set-buffer (find-file-noselect jtags-javadoc-frameset t))
-          (set-buffer frameset-buffer)
-          (revert-buffer t t)))
-      (goto-char (point-min))
-
-      (if (not (string-match "^/" javadoc-root))
-          (setq javadoc-root (concat "/" javadoc-root)))
-
-      ;; Insert full path to frames
-      (search-forward "<FRAME src=\"" nil t)
-      (insert (concat "file://" javadoc-root))
-      (search-forward "<FRAME src=\"" nil t)
-      (insert (concat "file://" javadoc-root)))))
+        (jtags-message "Found javadoc-root `%s'" javadoc-root)
+        (setq package-name (replace-regexp-in-string "\\\." "/" package-name))
+        (if (not (string-match "/$" javadoc-root))
+            (setq javadoc-root (concat javadoc-root "/")))
+        (let ((javadoc-file (concat javadoc-root package-name "/" class-name ".html")))
+          (message "Displaying URL %s" javadoc-file)
+          (funcall jtags-browse-url-function javadoc-file)))))))
 
 ;; ----------------------------------------------------------------------------
 ;; Initialization:

@@ -539,15 +539,6 @@ import foo.bar.util.connection.*;
                 "foo.bar.util.connection.*")
               '(jtags-find-imports (jtags-find-package)))
 
-;;; jtags-find-javadoc
-
-(assert-true '(jtags-find-javadoc "String" "java/lang/" jtags-javadoc-root-list))
-(assert-true '(jtags-find-javadoc "IOException" "java/io/" jtags-javadoc-root-list))
-(assert-true '(jtags-find-javadoc "Assert" "org/junit/" jtags-javadoc-root-list))
-
-(assert-false '(jtags-find-javadoc "FooBar" "org/junit/" jtags-javadoc-root-list))
-(assert-false '(jtags-find-javadoc "Assert" "org/foo/" jtags-javadoc-root-list))
-
 ;;; jtags-extras-match-index
 
 (assert-equal 0   '(jtags-extras-match-index '("^java\\.") "java.util.*"))

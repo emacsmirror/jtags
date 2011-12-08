@@ -6,13 +6,19 @@ JTAGS
 Changes between versions 0.96 and 0.97 (Date TBD)
 ---------------------------------------------------
 
-- Changed license to GNU GPL version 3.
+- Added support for http URLs in jtags-browse-url. Configure a Javadoc URL to
+  use for each group of packages, e.g. java or org.jdom.
 
-- Improved Java code parsing.
+- Only the Javadoc for the class found is displayed, not the entire Javadoc
+  frame set with all packages and classes.
 
 - Added support for Java enums.
 
+- Improved Java code parsing.
+
 - Binding case-fold-search with let instead of setting it with setq.
+
+- Changed license to GNU GPL version 3.
 
 
 Changes between versions 0.95 and 0.96 (2008-10-03)
