@@ -3,7 +3,7 @@
 JTAGS
 
 
-Changes between versions 0.96 and 0.97 (Date TBD)
+Changes between versions 0.96 and 0.97 (2016-01-18)
 ---------------------------------------------------
 
 - Added support for http URLs in jtags-browse-url. Configure a Javadoc URL to
@@ -16,7 +16,13 @@ Changes between versions 0.96 and 0.97 (Date TBD)
 
 - Improved Java code parsing.
 
+- Made jtags more package-aware.
+
 - Binding case-fold-search with let instead of setting it with setq.
+
+- Using internal jtags-in-literal instead of c-in-literal.
+
+- Changes to make jtags work with Emacs 24.5 and Java 8 source code.
 
 - Changed license to GNU GPL version 3.
 
@@ -152,7 +158,7 @@ Changes between versions 0.91 and 0.92 (2001-09-10)
 JTAGS-EXTRAS
 
 
-Changes between versions 0.2.0 and 0.3.0 (Date TBD)
+Changes between versions 0.2.0 and 0.3.0 (2018-01-18)
 -----------------------------------------------------
 
 - Changed license to GNU GPL version 3.

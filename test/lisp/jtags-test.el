@@ -1,6 +1,6 @@
 ;;; jtags-test.el --- code for testing jtags mode
 
-;; Copyright (C) 2006-2011 Johan Dykstrom
+;; Copyright (C) 2006-2016 Johan Dykstrom
 
 ;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Sep 2006
@@ -83,7 +83,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer. Example:
   (let ((result (safe-eval expression)))
     (if (equal expected result)
         (message "PASSED")
-      (message "FAILED on line %d: expected `%s' but was `%s'" (jtags-get-line) expected result)
+      (message "FAILED on line %d: expected `%s' but was `%s'" (line-number-at-pos) expected result)
       nil)))
 
 (defun assert-true (expression)
@@ -92,7 +92,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
     (if result
         (message "PASSED")
-      (message "FAILED on line %d" (jtags-get-line))
+      (message "FAILED on line %d" (line-number-at-pos))
       nil)))
 
 (defun assert-false (expression)
@@ -101,7 +101,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
     (if (not result)
         (message "PASSED")
-      (message "FAILED on line %d" (jtags-get-line))
+      (message "FAILED on line %d" (line-number-at-pos))
       nil)))
 
 ;; Evaluate this expression to define the functions above!
@@ -205,11 +205,6 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 (assert-equal '("HashSet" "AbstractSet" "AbstractCollection" "Object")
               '(jtags-do-get-class-list "HashSet" '("java.lang.*" "java.util.ArrayList" "java.util.HashSet")))
 
-;; FAILS - returns ("Double" "Arc2D" "RectangularShape" "Object")
-;;         need package name to know which "Double" user wants
-(assert-equal '("Double" "Number" "Object")
-              '(jtags-do-get-class-list "Double"))
-
 ;;; jtags-recursive-tags-lookup
 
 (assert-true '(let ((definition (jtags-recursive-tags-lookup '("StringBuffer" "class" "getField") '("StringBuffer" "Object"))))
@@ -240,6 +235,113 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
                 (and definition
                      (string-equal (jtags-definition-class definition) "String")
                      (string-equal (jtags-definition-name definition) "equals"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "lang" "String") nil)))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "String")
+                     (string-equal (jtags-definition-name definition) "String")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "lang" "Class" "forName") nil)))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "Class")
+                     (string-equal (jtags-definition-name definition) "forName")
+                     (string-equal (jtags-definition-type definition) "Class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "lang" "Integer" "valueOf") nil '("java.lang.*" "java.io.File"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "Integer")
+                     (string-equal (jtags-definition-name definition) "valueOf")
+                     (string-equal (jtags-definition-type definition) "Integer"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "util" "List") nil)))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.util")
+                     (string-equal (jtags-definition-class definition) "List")
+                     (string-equal (jtags-definition-name definition) "List")
+                     (string-equal (jtags-definition-type definition) "interface"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("List") nil '("java.util.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.util")
+                     (string-equal (jtags-definition-class definition) "List")
+                     (string-equal (jtags-definition-name definition) "List")
+                     (string-equal (jtags-definition-type definition) "interface"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "awt" "Component") nil '("java.lang.*" "java.awt.List" "java.awt.Component"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.awt")
+                     (string-equal (jtags-definition-class definition) "Component")
+                     (string-equal (jtags-definition-name definition) "Component")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "lang" "String") '("StringBuffer" "Object"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "String")
+                     (string-equal (jtags-definition-name definition) "String")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("String") nil '("java.util.*" "java.lang.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "String")
+                     (string-equal (jtags-definition-name definition) "String")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("String") nil '("java.lang.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "String")
+                     (string-equal (jtags-definition-name definition) "String")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("InputStreamReader") nil '("java.lang.*" "java.io.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.io")
+                     (string-equal (jtags-definition-class definition) "InputStreamReader")
+                     (string-equal (jtags-definition-name definition) "InputStreamReader")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("InputStreamReader") nil '("java.io.InputStreamReader"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.io")
+                     (string-equal (jtags-definition-class definition) "InputStreamReader")
+                     (string-equal (jtags-definition-name definition) "InputStreamReader")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup '("java" "util" "List") nil '("java.io.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.util")
+                     (string-equal (jtags-definition-class definition) "List")
+                     (string-equal (jtags-definition-name definition) "List")
+                     (string-equal (jtags-definition-type definition) "interface"))))
+
+;; Just package names should not succeed
+(assert-false '(jtags-recursive-tags-lookup '("java") nil))
+(assert-false '(jtags-recursive-tags-lookup '("java" "lang") nil))
+;; Invalid package for class lookup
+(assert-false '(jtags-recursive-tags-lookup '("File") nil '("java.util.*" "java.lang.*")))
+(assert-false '(jtags-recursive-tags-lookup '("JTable") nil '("java.util.*" "javax.swing.JList")))
+
+;; jtags-recursive-tags-lookup-with-package
+
+(assert-true '(let ((definition (jtags-recursive-tags-lookup-with-package '("java" "io" "InputStreamReader"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.io")
+                     (string-equal (jtags-definition-class definition) "InputStreamReader")
+                     (string-equal (jtags-definition-name definition) "InputStreamReader")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup-with-package '("javax" "swing" "JLabel"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "javax.swing")
+                     (string-equal (jtags-definition-class definition) "JLabel")
+                     (string-equal (jtags-definition-name definition) "JLabel")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-recursive-tags-lookup-with-package '("java" "lang" "Class" "forName"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.lang")
+                     (string-equal (jtags-definition-class definition) "Class")
+                     (string-equal (jtags-definition-name definition) "forName")
+                     (string-equal (jtags-definition-type definition) "Class"))))
+
+;; Just package names should not succeed
+(assert-false '(jtags-recursive-tags-lookup-with-package '("java")))
+(assert-false '(jtags-recursive-tags-lookup-with-package '("java" "lang")))
+;; Invalid package for class lookup
+(assert-false '(jtags-recursive-tags-lookup-with-package '("java" "lang" "File")))
+(assert-false '(jtags-recursive-tags-lookup-with-package '("java" "io" "String")))
 
 ;;; jtags-buffer-tag-table-list
 
@@ -288,14 +390,21 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 
 ;;; jtags-lookup-class-members
 
-(jtags-lookup-class-members "Exception"
-                            '("java.io.*" "java.util.*" "java.lang.*")) ; Return members of java.lang.Exception
-(jtags-lookup-class-members "Double"
-                            '("java.io.*" "java.util.*" "java.lang.*")) ; Return members of java.lang.Double
-(jtags-lookup-class-members "List"
-                            '("java.io.*" "java.util.*" "java.lang.*")) ; Return members of java.util.List
-(jtags-lookup-class-members "Serializable"
-                            '("java.io.*" "java.util.*" "java.lang.*")) ; Return nil
+(let ((members (jtags-lookup-class-members "Foo" '("net.sf.jtags.*" "java.util.*" "java.lang.*"))))
+  (message "Members=%S" members)
+  (assert-true '(member "getName" members)))
+(let ((members (jtags-lookup-class-members "Exception" '("java.io.*" "java.util.*" "java.lang.*"))))
+  (message "Members=%S" members)
+  (assert-true '(member "Exception" members)))
+(let ((members (jtags-lookup-class-members "Double" '("java.io.*" "java.util.*" "java.lang.*"))))
+  (message "Members=%S" members)
+  (assert-true '(member "longValue" members)))
+(let ((members (jtags-lookup-class-members "List" '("java.io.*" "java.util.*" "java.lang.*"))))
+  (message "Members=%S" members)
+  (assert-true '(member "size" members)))
+(let ((members (jtags-lookup-class-members "Serializable" '("java.io.*" "java.util.*" "java.lang.*"))))
+  (message "Members=%S" members)
+  (assert-true '(null members)))
 
 ;;; jtags-lookup-identifier
 
@@ -304,6 +413,12 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "String")
                      (string-equal (jtags-definition-name definition) "String")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-lookup-identifier "JList")))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "javax.swing")
+                     (string-equal (jtags-definition-class definition) "JList")
+                     (string-equal (jtags-definition-name definition) "JList")
                      (string-equal (jtags-definition-type definition) "class"))))
 (assert-true '(let ((definition (jtags-lookup-identifier "String" "String")))
                 (and definition
@@ -341,6 +456,18 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
                      (string-equal (jtags-definition-class definition) "FlatteningPathIterator")
                      (string-equal (jtags-definition-name definition) "cury")
                      (string-equal (jtags-definition-type definition) "double"))))
+(assert-true '(let ((definition (jtags-lookup-identifier "List" nil '("java.io.*" "java.awt.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.awt")
+                     (string-equal (jtags-definition-class definition) "List")
+                     (string-equal (jtags-definition-name definition) "List")
+                     (string-equal (jtags-definition-type definition) "class"))))
+(assert-true '(let ((definition (jtags-lookup-identifier "List" nil '("java.io.*" "java.util.*"))))
+                (and definition
+                     (string-equal (jtags-definition-package definition) "java.util")
+                     (string-equal (jtags-definition-class definition) "List")
+                     (string-equal (jtags-definition-name definition) "List")
+                     (string-equal (jtags-definition-type definition) "interface"))))
 
 ;; FAILS with JDK < 1.5.x (type is "Object")
 (assert-true '(let ((definition (jtags-lookup-identifier "Iterator" "next" '("java.io.*" "java.util.Iterator" "java.lang.*"))))
@@ -350,6 +477,8 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
                      (string-equal (jtags-definition-name definition) "next")
                      (string-equal (jtags-definition-type definition) "E"))))
 
+(assert-false '(jtags-lookup-identifier "java"))
+(assert-false '(jtags-lookup-identifier "javax"))
 (assert-false '(jtags-lookup-identifier "FooBar"))
 (assert-false '(jtags-lookup-identifier "String" "foo"))
 (assert-false '(jtags-lookup-identifier "Double" nil '("java.io.*")))
@@ -407,8 +536,6 @@ public final class Integer Integer41,1265
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "cury" bound)))
-
-;; FAILS in GNU Emacs 21 (ignore class member "curx")
 (assert-equal '("double" 70 2325)
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
@@ -439,8 +566,8 @@ public final class Integer Integer41,1265
 
 ;;; jtags-update-tags-file
 
-(jtags-update-tags-file "c:/java/junit4.8.2/src")
-(jtags-update-tags-file "c:/java/junit4.8.2/src/A_TAGS_FILE")
+(assert-true (jtags-update-tags-file "c:/java/junit4.8.2/src"))
+(assert-true (jtags-update-tags-file "c:/java/junit4.8.2/src/A_TAGS_FILE"))
 
 ;;; jtags-find-identifier-backward
 
@@ -465,6 +592,27 @@ Class.
               '(progn (goto-test ";;; jtags-find-identifier-backward" 7 't) (jtags-find-identifier-backward)))
 (assert-equal '"Class"
               '(progn (goto-test ";;; jtags-find-identifier-backward" 8 't) (jtags-find-identifier-backward)))
+
+;;; jtags-in-literal
+
+;; >>> TEST DATA
+foo().bar
+"println"
+;; toString
+//
+/*
+;; <<< TEST DATA
+
+(assert-equal nil
+              '(progn (goto-test ";;; jtags-in-literal" 3 't) (backward-char) (jtags-in-literal)))
+(assert-equal 'string
+              '(progn (goto-test ";;; jtags-in-literal" 4 't) (backward-char) (jtags-in-literal)))
+(assert-equal 'comment
+              '(progn (goto-test ";;; jtags-in-literal" 5 't) (backward-char) (jtags-in-literal)))
+(assert-equal 'comment
+              '(progn (goto-test ";;; jtags-in-literal" 6 't) (backward-char) (jtags-in-literal)))
+(assert-equal 'comment
+              '(progn (goto-test ";;; jtags-in-literal" 7 't) (backward-char) (jtags-in-literal)))
 
 ;;; jtags-parse-java-line
 
@@ -522,14 +670,17 @@ import java.util.HashMap;
 "import java.util.List;"
 
 import foo.bar.event.EventHandler;
-import foo.bar.server.base.ConnectionMgr   ;
+ import foo.bar.server.base.ConnectionMgr   ;
 import foo.bar.server.management .*;
-import foo.bar.util.  connection.  *  ;
+	import foo.bar.util.  connection.  *  ;
 import foo.bar.util.connection.*;
 ;; <<< TEST DATA
 
 (assert-equal "foo.bar.util.config"
               '(jtags-find-package))
+
+;;; jtags-find-imports (reuses test data from jtags-find-package)
+
 (assert-equal '("foo.bar.util.config.*"
                 "java.lang.*"
                 "java.util.HashMap"
@@ -537,7 +688,15 @@ import foo.bar.util.connection.*;
                 "foo.bar.server.base.ConnectionMgr"
                 "foo.bar.server.management.*"
                 "foo.bar.util.connection.*")
-              '(jtags-find-imports (jtags-find-package)))
+              '(jtags-find-imports))
+(assert-equal '("foo.bar.axe.*"
+                "java.lang.*"
+                "java.util.HashMap"
+                "foo.bar.event.EventHandler"
+                "foo.bar.server.base.ConnectionMgr"
+                "foo.bar.server.management.*"
+                "foo.bar.util.connection.*")
+              '(jtags-find-imports "foo.bar.axe"))
 
 ;;; jtags-extras-match-index
 

@@ -1,6 +1,6 @@
 ;;; jtags-extras.el --- jtags related functionality for Java development
 
-;; Copyright (C) 2007-2011 Johan Dykstrom
+;; Copyright (C) 2007-2016 Johan Dykstrom
 
 ;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Oct 2007
@@ -127,7 +127,7 @@ in the list."
   (interactive)
 
   ;; Find definition of identifier
-  (let ((definition (jtags-find-tag)))
+  (let ((definition (jtags-find-tag-with-packages)))
 
     (if (null definition)
         (message "Tag not found!")

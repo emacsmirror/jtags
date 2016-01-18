@@ -20,10 +20,12 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 
 import org.xml.sax.XMLReader;
 
-public class    Foo extends java.io.IOException implements Serializable {
+public final class    Foo extends java.io.IOException implements Serializable {
 
     private static Logger TLOG = Logger.getLogger(Foo.class.getName());
 
@@ -72,7 +74,7 @@ public class    Foo extends java.io.IOException implements Serializable {
 
     public java.lang.String getName() {
         // This comment contains code: name.toUpperCase().trim()
-        String result = name;
+        String result = name + " " + this.getName();
         String code = "This string contains code: String.valueOf(1)";
         result += " " + Class.class.getName().toUpperCase().toLowerCase();
         return result;
@@ -99,6 +101,11 @@ public class    Foo extends java.io.IOException implements Serializable {
     {
         XMLReader reader = null;
         return reader;
+    }
+
+    public static void main(String[] args) {
+        Foo foo = new Foo("foo");
+        System.out.println(foo);
     }
 }
 
@@ -158,7 +165,8 @@ class Bar {
      */
     public List<String> getStringList(List<String> in) {
         java.util.List<String> myList = in;
-        // Looking up Map should result in java.util.Map, not javax.swing.text.html.Map
+        // Looking up Map should result in java.util.Map, but this fails
+        // because the definition of Map is missing from the tags file.
         Map<Integer, String> myMap = new HashMap<Integer, String>();
         Iterator<String> iter = in.iterator();
         theList = in;
@@ -167,6 +175,8 @@ class Bar {
         for (String myString : in) {
             System.out.println("myString = " + myString);
             myString.toLowerCase();
+            String s = "this is a string " + "that spans " +
+                "over two lines!";
         }
 
         for (String theString : theList) {
@@ -186,19 +196,53 @@ class Bar {
     }
 }
 
+interface Face<K,V> {
+    int size();
+}
+
+abstract class AbstractFace<K,V> implements Face<K,V> {
+    public int size() { return 0; }
+}
+
+final     class ConcreteFace
+    extends AbstractFace<String,Integer> {
+    @Override
+    public String toString() {
+        Integer i = getFoo();
+        return i.toString();
+    }
+
+    private int getFoo() { return 0; }
+}
+
+enum MyClasses {
+    FOO,
+    BAR,
+    AXE
+}
+
 class Axe extends net.sf.jtags.Bar {
 
     private Thread t = null;
 
     private Bar bar = null;
 
+    enum InternalEnum {
+        ONE,
+        TWO,
+        THREE
+    }
+
     public Axe(final net.sf.jtags.Foo poFoo) {
         super("Axe", poFoo);
-        System.out.println("Gurkburk=" + gurkburk + poFoo.getName().trim());
+        System.out.println("Gurkburk=" + gurkburk + poFoo.getName().trim() + InternalEnum.ONE);
         t = new Thread();
         t.run();
     }
 
+    /*
+     * This is a C style comment.
+     */
     public void setBarArray(Bar[] bar, Foo[]foo, Axe axe[]) {
         int aaa, bbb, ccc;
         this.bar = bar[0];
@@ -206,7 +250,7 @@ class Axe extends net.sf.jtags.Bar {
         foo[0] = foo[0];
         axe[0] = axe[0];
         aaa = 0;
-        bbb = 0;
+        bbb = MyClasses.FOO.ordinal();
         ccc = 0;
     }
 
@@ -217,8 +261,18 @@ class Axe extends net.sf.jtags.Bar {
         for (Bar bar : bars) {
             setBar(bar);
         }
+
+        InnerClass ic = new InnerClass();
+        Foo foo = ic.calculate("foo");
     }
 
+    class InnerClass {
+        Foo calculate(String param) {
+            return new Foo(param);
+        }
+    }
+
+    // Class net.sf.jtags.Bar cannot be looked up because of how jtags-right-package-p works
     public net.sf.jtags.Bar setBar(Bar bar) {
         this.bar = bar;
         return bar;
