@@ -3,6 +3,14 @@
 JTAGS
 
 
+Changes between versions 0.97 and 0.98.0 (TDB)
+----------------------------------------------
+
+- Removed deprecated variables and methods.
+
+- Droppped support for GNU Emacs 21.
+
+
 Changes between versions 0.96 and 0.97 (2016-01-18)
 ---------------------------------------------------
 

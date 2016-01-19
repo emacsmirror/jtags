@@ -4,7 +4,7 @@
 
 ;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Sep 2006
-;; Version: 0.97
+;; Version: 0.98.0
 ;; Keywords: tools
 ;; URL: http://jtags.sourceforge.net
 
@@ -23,12 +23,12 @@
 
 ;;; Commentary:
 
-;; This file contains code for unit testing `jtags-mode'. The code for
-;; jtags mode itself is located in file "jtags.el". Start by defining
+;; This file contains code for unit testing `jtags-mode'.  The code for
+;; jtags mode itself is located in file "jtags.el".  Start by defining
 ;; all functions in the section "Test infrastructure" below, search for
 ;; this string in the code: "Evaluate this expression to define the
 ;; functions above!" After defining the infrastructure functions, you can
-;; run the tests in section "Unit test" below. Most of them are JUnit
+;; run the tests in section "Unit test" below.  Most of them are JUnit
 ;; style assertions.
 ;;
 ;; To run the unit tests in XEmacs, you must modify variable
@@ -46,9 +46,9 @@
 
 (defun goto-test (name n &optional end)
   "Goto test specified by string NAME, and move N lines forward.
-Search forward from beginning of buffer for string NAME. Move N lines forward
-\(backward if N is negative). Goto end of line if optional argument END is
-non-nil.
+Search forward from beginning of buffer for string NAME.  Move N
+lines forward (backward if N is negative).  Goto end of line if
+optional argument END is non-nil.
 
 The function `goto-test' can be used to find test data embedded in this file.
 It does not save the original buffer position."
@@ -75,7 +75,7 @@ The result of evaluating EXPRESSION is returned."
     result))
 
 (defun assert-equal (expected expression)
-  "Return non-nil if EXPRESSION evaluates to a value `equal' to EXPECTED.
+  "Return non-nil if EXPECTED is `equal' to '(eval EXPRESSION).
 If the test fails, a message is printed in the \"*Messages*\" buffer. Example:
 
 \(assert-equal 1 '(car (list 1 2 3))) -> t
@@ -87,7 +87,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer. Example:
       nil)))
 
 (defun assert-true (expression)
-  "Return non-nil if EXPRESSION evaluates to non-nil.
+  "Return non-nil if EXPRESSION is evaluated to non-nil.
 If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
     (if result
@@ -96,7 +96,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
       nil)))
 
 (defun assert-false (expression)
-  "Return non-nil if EXPRESSION evaluates to nil.
+  "Return non-nil if EXPRESSION is evaluated to nil.
 If the test fails, a message is printed in the \"*Messages*\" buffer."
   (let ((result (safe-eval expression)))
     (if (not result)
@@ -115,19 +115,6 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 ;; Unit test:
 ;; ----------------------------------------------------------------------------
 
-;;; jtags-uniqify-list
-
-(assert-equal '("A" "B" "C" "D")
-              '(jtags-uniqify-list '("A" "B" "A" "C" "C" "A" "A" "D")))
-(assert-equal '("A" "B")
-              '(jtags-uniqify-list '("A" "B")))
-(assert-equal '("A")
-              '(jtags-uniqify-list '("A" "A")))
-(assert-equal '("A")
-              '(jtags-uniqify-list '("A")))
-(assert-equal '()
-              '(jtags-uniqify-list '()))
-
 ;;; jtags-filter-list
 
 (assert-equal '("1" "123")
@@ -143,37 +130,38 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 
 ;;; jtags-rotate-left
 
-(assert-equal '()
-              '(jtags-rotate-left '()))
-(assert-equal '(1)
-              '(jtags-rotate-left '(1)))
-(assert-equal '(2 1)
-              '(jtags-rotate-left '(1 2)))
-(assert-equal '(2 3 1)
-              '(jtags-rotate-left '(1 2 3)))
+(assert-equal '()      '(jtags-rotate-left '()))
+(assert-equal '(1)     '(jtags-rotate-left '(1)))
+(assert-equal '(2 1)   '(jtags-rotate-left '(1 2)))
+(assert-equal '(2 3 1) '(jtags-rotate-left '(1 2 3)))
+
+;;; jtags-line-to-point
+
+(assert-equal 1  '(jtags-line-to-point 1))
+(assert-equal 51 '(jtags-line-to-point 2))
 
 ;;; jtags-file-name-directory
 
-(assert-equal "c:/"                   '(jtags-file-name-directory "c:/"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java/"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "c:/Java/junit4.8.2/.."))
-(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "c:/Java/junit4.8.2"))
-(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "c:/Java/junit4.8.2/junit.jar"))
-(assert-equal "c:/"                   '(jtags-file-name-directory "C:\\"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "C:\\Java"))
-(assert-equal "c:/Java/"              '(jtags-file-name-directory "C:\\Java\\"))
-(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\"))
-(assert-equal "c:/Java/junit4.8.2/"   '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\junit.jar"))
+(assert-equal "c:/"                  '(jtags-file-name-directory "c:/"))
+(assert-equal "c:/Java/"             '(jtags-file-name-directory "c:/Java"))
+(assert-equal "c:/Java/"             '(jtags-file-name-directory "c:/Java/"))
+(assert-equal "c:/Java/"             '(jtags-file-name-directory "c:/Java/junit4.8.2/.."))
+(assert-equal "c:/Java/junit4.8.2/"  '(jtags-file-name-directory "c:/Java/junit4.8.2"))
+(assert-equal "c:/Java/junit4.8.2/"  '(jtags-file-name-directory "c:/Java/junit4.8.2/junit.jar"))
+(assert-equal "c:/"                  '(jtags-file-name-directory "C:\\"))
+(assert-equal "c:/Java/"             '(jtags-file-name-directory "C:\\Java"))
+(assert-equal "c:/Java/"             '(jtags-file-name-directory "C:\\Java\\"))
+(assert-equal "c:/Java/junit4.8.2/"  '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\"))
+(assert-equal "c:/Java/junit4.8.2/"  '(jtags-file-name-directory "C:\\Java\\junit4.8.2\\junit.jar"))
 
 ;; FAILS in Windows
-(assert-equal "/"             '(jtags-file-name-directory "/"))
-(assert-equal "/usr/"         '(jtags-file-name-directory "/usr"))
-(assert-equal "/usr/"         '(jtags-file-name-directory "/usr/"))
-(assert-equal "/usr/local/"   '(jtags-file-name-directory "/usr/local"))
-(assert-equal "/usr/"         '(jtags-file-name-directory "/usr/local/.."))
-(assert-equal "/bin/"         '(jtags-file-name-directory "/bin/"))
-(assert-equal "/bin/"         '(jtags-file-name-directory "/bin/sh"))
+(assert-equal "/"           '(jtags-file-name-directory "/"))
+(assert-equal "/usr/"       '(jtags-file-name-directory "/usr"))
+(assert-equal "/usr/"       '(jtags-file-name-directory "/usr/"))
+(assert-equal "/usr/local/" '(jtags-file-name-directory "/usr/local"))
+(assert-equal "/usr/"       '(jtags-file-name-directory "/usr/local/.."))
+(assert-equal "/bin/"       '(jtags-file-name-directory "/bin/"))
+(assert-equal "/bin/"       '(jtags-file-name-directory "/bin/sh"))
 
 ;;; jtags-get-class-list-iter
 
@@ -377,8 +365,8 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
       (buffer-tag-table "c:/Java"))
   (assert-equal '("c:/Java/TAGS" "c:/TAGS") '(jtags-buffer-tag-table-list)))
 
-(defun return-true () 't)
-(defun return-false () nil)
+(defun return-true () "Return non-nil." 't)
+(defun return-false () "Return nil." nil)
 
 (let ((tags-table-list '("c:/java/jdk1.6.0/src"))
       (tag-table-alist '(("\\.el$" . "c:/") ((return-true) . "c:/Java") ("\\.java$" . "c:/Windows"))))

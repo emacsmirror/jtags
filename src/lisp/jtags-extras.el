@@ -4,7 +4,7 @@
 
 ;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Oct 2007
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Keywords: languages, tools
 ;; URL: http://jtags.sourceforge.net
 
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; This package provides functionality to support Java development. The
+;; This package provides functionality to support Java development.  The
 ;; functions in the package depend on `jtags-mode', but are not part of
 ;; the core jtags package.
 ;;
@@ -44,11 +44,11 @@
 
 ;; Configuration:
 
-;; To automatically organize the import statements after adding a new one, set
-;; `jtags-extras-organize-after-add-flag' to non-nil. To change how the import
-;; statements are sorted, edit `jtags-extras-import-order-list'. Both variables
-;; can be set using customize. Type `M-x customize-group' and enter group name
-;; "jtags".
+;; To automatically organize the import statements after adding a new one,
+;; set `jtags-extras-organize-after-add-flag' to non-nil.  To change how the
+;; import statements are sorted, edit `jtags-extras-import-order-list'.  Both
+;; variables can be set using customize.  Type `M-x customize-group' and enter
+;; group name "jtags".
 ;;
 ;; To make jtags-extras work as expected, you must also configure package
 ;; jtags, see the configuration section in file "jtags.el".
@@ -79,9 +79,9 @@
 Each element is a regexp that matches a group of import statements, or a
 hyphen (-).
 
-Import statements are sorted according to which group they belong to. Import
+Import statements are sorted according to which group they belong to.  Import
 statements that belong to the same group are sorted alphabetically within the
-group. To separate groups of import statements with a blank line, insert a
+group.  To separate groups of import statements with a blank line, insert a
 hyphen in the list."
   :type '(repeat regexp)
   :group 'jtags)
@@ -97,8 +97,7 @@ A nil value means that new imports will be added last in the list."
 ;; ----------------------------------------------------------------------------
 
 (defun jtags-extras-match-index (list s)
-  "Return index of first regexp in LIST that matches string S.
-Return nil if no regexp in LIST matches S."
+  "Return index of first regexp in LIST that can match string S, or nil."
   (let ((index 0))
     (block while-list
       (while list
@@ -111,7 +110,7 @@ Return nil if no regexp in LIST matches S."
 ;; Private variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst jtags-extras-version "0.3.0"
+(defconst jtags-extras-version "0.3.1"
   "The current version of `jtags-extras'.")
 
 ;; ----------------------------------------------------------------------------
@@ -270,7 +269,7 @@ the given region."
 (defun jtags-extras-insert-ws-region (start end)
   "Insert blank lines between import statements belonging to different groups.
 The list `jtags-extras-import-order-list' defines where to insert the blank
-lines. Only import statements within the region defined by START and END are
+lines.  Only import statements within the region defined by START and END are
 considered."
   (save-excursion
     (goto-char end)
@@ -339,8 +338,8 @@ Return a dummy string if this line is not an import statement."
 
 (defun jtags-extras-sort-import-predicate (import1 import2)
   "Return t if IMPORT1 should be sorted before IMPORT2.
-Import statements are sorted according to which group they belong to. The
-groups are defined in `jtags-extras-import-order-list'. Import statements
+Import statements are sorted according to which group they belong to.  The
+groups are defined in `jtags-extras-import-order-list'.  Import statements
 that belong to the same group are sorted alphabetically within the group."
 ;;   (jtags-message "Comparing imports `%s' and `%s'" import1 import2)
   (let ((index1 (jtags-extras-match-index jtags-extras-import-order-list import1))

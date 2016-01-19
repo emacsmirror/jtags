@@ -6,7 +6,7 @@
 ;;	Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Maintainer: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: May 2001
-;; Version: 0.97
+;; Version: 0.98.0
 ;; Keywords: languages, tools
 ;; URL: http://jtags.sourceforge.net
 
@@ -28,9 +28,9 @@
 ;; The main purpose of `jtags-mode' is to provide an improved tags lookup
 ;; function for Java source code, compared to the ordinary etags package.
 ;; While etags knows only the name of the identifier, jtags also knows the
-;; context in which the identifier is used. This allows jtags to find the
+;; context in which the identifier is used.  This allows jtags to find the
 ;; correct declaration at once, instead of the declaration that happens to
-;; appear first in the tags table file. The jtags package also contains a
+;; appear first in the tags table file.  The jtags package also contains a
 ;; function for completing partly typed class members, and functions for
 ;; managing tags table files.
 ;;
@@ -48,10 +48,10 @@
 ;;                                 class in the current buffer is tagged
 ;;
 ;; Throughout this file, the two terms DECLARATION and DEFINITION are used
-;; repeatedly. The DECLARATION of an identifier is the place in the Java source
-;; code where the identifier is declared, e.g. the class declaration. The
-;; DEFINITION of an identifier is the data structure used by jtags to describe
-;; the declaration, containing file name, line number etc.
+;; repeatedly.  The DECLARATION of an identifier is the place in the Java
+;; source code where the identifier is declared, e.g. the class declaration.
+;; The DEFINITION of an identifier is the data structure used by jtags to
+;; describe the declaration, containing file name, line number etc.
 
 ;; Installation:
 
@@ -67,10 +67,10 @@
 ;; etags program available to jtags mode.
 ;;
 ;; Unzip the source code files that come with the JDK and other products you
-;; use, e.g. JUnit. The etags program can only extract information from source
+;; use, e.g. JUnit.  The etags program can only extract information from source
 ;; code files, and not from class files.
 ;;
-;; Configure the tags table list in your init file. Include the directories
+;; Configure the tags table list in your init file.  Include the directories
 ;; where you unzipped the external source code files, and the directories where
 ;; your project's source code is located.
 ;;
@@ -87,14 +87,14 @@
 ;; (setq tags-auto-read-changed-tag-files 't)
 ;;
 ;; Type `M-x jtags-update-tags-files' to update all of the files in the tags
-;; table list. If you do not have write access to all of the tags table files,
+;; table list.  If you do not have write access to all of the tags table files,
 ;; e.g. in the JDK installation directory, you can copy the source code tree,
-;; or ask the system administrator to create the tags table files for you. If
+;; or ask the system administrator to create the tags table files for you.  If
 ;; you are running Linux, you can start Emacs using the sudo command once, to
 ;; create the tags table files.
 ;;
 ;; The shell command that runs when you update tags table files is defined in
-;; the variable `jtags-etags-command'. Change this variable to run a specific
+;; the variable `jtags-etags-command'.  Change this variable to run a specific
 ;; version of etags, or to include other source code files in the tags table
 ;; files.
 ;;
@@ -103,11 +103,11 @@
 ;; Package jtags now supports both http URLs and file URLs.
 ;;
 ;; If you want to use the jtags submenu, set `jtags-display-menu-flag' to
-;; non-nil. If this variable is non-nil, the jtags submenu will be displayed
+;; non-nil.  If this variable is non-nil, the jtags submenu will be displayed
 ;; when jtags mode is active.
 ;;
 ;; You can customize all the variables above, as well as the faces used in
-;; member completion. Type `M-x customize-group' and enter group "jtags" for
+;; member completion.  Type `M-x customize-group' and enter group "jtags" for
 ;; the jtags mode variables, or "etags" for the tags table list.
 ;;
 ;; The jtags package defines four key bindings in the `jtags-mode-map':
@@ -194,18 +194,13 @@
 
 ;; Other stuff:
 
-(defcustom jtags-javadoc-root-list nil
-  "This variable has been deprecated and will be removed."
-  :type '(repeat file)
-  :group 'jtags)
-
 (defcustom jtags-javadoc-root-alist
   '(("^java\\." . "https://docs.oracle.com/javase/8/docs/api")
     ("^javax\\." . "https://docs.oracle.com/javase/8/docs/api"))
   "*Alist of package patterns vs corresponding Javadoc root URLs.
 Each element looks like (REGEXP . URL) where REGEXP is a regexp
 that matches a group of imports, and URL is the Javadoc root URL
-for that group of imports. The Javadoc root URL is where the
+for that group of imports.  The Javadoc root URL is where the
 \"index.html\" file resides."
   :type '(alist :key-type regexp :value-type string)
   :group 'jtags)
@@ -222,15 +217,15 @@ This function will be called with one argument: the URL to display."
     "find `pwd` | grep -E java$ | etags --declarations --members -o %f -")
   "*The shell command to run when updating tags table files.
 This variable allows you to customize how to update tags table files, e.g.
-specify a path to the etags program. The sequence %f will be replaced by
+specify a path to the etags program.  The sequence %f will be replaced by
 the actual tags table file name when running the command."
   :type 'string
   :group 'jtags)
 
 (defcustom jtags-display-menu-flag 't
   "*Non-nil means that the jtags submenu will be added to the menu bar.
-Set this variable to nil if you do not want to use the jtags submenu. If
-non-nil, the submenu will be displayed when jtags mode is active."
+Set this variable to nil if you do not want to use the jtags submenu.
+If non-nil, the submenu will be displayed when jtags mode is active."
   :type 'boolean
   :group 'jtags)
 
@@ -242,7 +237,7 @@ parse `tag-table-alist' instead of the built-in function."
   :group 'jtags)
 
 (defcustom jtags-trace-flag nil
-  "*Non-nil means that tracing is ON. A nil value means that tracing is OFF."
+  "*Non-nil means that tracing is ON.  A nil value means that tracing is OFF."
   :type 'boolean
   :group 'jtags)
 
@@ -250,23 +245,11 @@ parse `tag-table-alist' instead of the built-in function."
 ;; Generic functions:
 ;; ----------------------------------------------------------------------------
 
-(defun jtags-uniqify-list (list)
-  "Return a copy of LIST with all duplicates removed.
-The original list is not modified. Example:
-
-\(jtags-uniqify-list '\(1 3 1 5 3 1\)\) -> \(1 3 5\)"
-  (let (unique)
-    (while list
-      (unless (member (car list) unique)
-        (setq unique (cons (car list) unique)))
-      (setq list (cdr list)))
-    (nreverse unique)))
-
 (defun jtags-filter-list (list predicate)
   "Return a list containing all elements in LIST that satisfy PREDICATE.
-The original LIST is not modified. PREDICATE should be a function of one
+The original LIST is not modified.  PREDICATE should be a function of one
 argument that returns non-nil if the argument should be part of the result
-list. Example:
+list.  Example:
 
 \(jtags-filter-list '\(1 2 3 4 5\) \(lambda \(x\) \(> x 3\)\)\) -> \(4 5\)"
   (let (result)
@@ -297,8 +280,8 @@ SUBEXP specifies which parenthesized expression in the last regexp."
 (defun jtags-file-name-directory (filename)
   "Return the directory component in file name FILENAME.
 Unlike the built-in function `file-name-directory', this function also
-normalizes the file name. File name components such as `..' and `~' are
-expanded. Back slashes are replaced with forward slashes. The returned
+normalizes the file name.  File name components such as `..' and `~' are
+expanded.  Back slashes are replaced with forward slashes.  The returned
 string always ends with a slash."
   (setq filename (file-truename filename))
   (if (string-match "^[A-Za-z]:" filename)
@@ -325,7 +308,7 @@ a string literal, or nil if somewhere else."
 ;; Private variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst jtags-version "0.97"
+(defconst jtags-version "0.98.0"
   "The current version of jtags mode.")
 
 (defconst jtags-string-literal "#stringliteral#"
@@ -387,8 +370,9 @@ This variable is used to circle completions.")
   "Display message STRING at the bottom of the screen if tracing is ON.
 The message also goes into the `*Messages*' buffer.
 
-The first argument is a format control string, and the rest are data
-to be formatted under control of the string. See `format' for details.
+The first argument is a format control STRING, and the rest, specified in
+ARGS, are data to be formatted under control of the string.  See `format'
+for details.
 
 See `jtags-trace-flag' on how to turn tracing ON and OFF."
   (when jtags-trace-flag
@@ -470,7 +454,7 @@ See `jtags-trace-flag' on how to turn tracing ON and OFF."
 (defun jtags-show-declaration ()
   "Look up the identifier around or before point, and show its declaration.
 
-Find the definition of the identifier in the tags table files. Load and
+Find the definition of the identifier in the tags table files.  Load and
 display the Java source file where the identifier is declared, and move
 the point to the first line of the declaration.
 
@@ -518,7 +502,7 @@ members in those classes, and display the list of members in the echo area.
 Members with certain properties, e.g. 'static', can be displayed using a
 different face.
 
-The first member in the list is selected as the default completion. Typing
+The first member in the list is selected as the default completion.  Typing
 \\<jtags-mode-map>\\[jtags-member-completion] again will select the next member in the list, and so on.
 
 When completing members in a class (and not an object), only static members
@@ -564,7 +548,7 @@ will be displayed."
   "Format MEMBERS, a list of class members, for printing in the echo area.
 The result is a string where each member is separated by a space, and where
 members with certain text properties, e.g. 'static' are fontified using a
-different face. See function `jtags-get-tagged-members'."
+different face.  See function `jtags-get-tagged-members'."
   (let ((result))
     (dolist (member members result)
       (let ((member-face "jtags-")
@@ -597,7 +581,7 @@ FILENAME is the name of the current buffer."
 (defun jtags-filter-class-list (class-list)
   "Return a list of classes that the point is within.
 Look for the end of each class in CLASS-LIST and decide if point is
-in that class or not. Return the list of classes that the point is
+in that class or not.  Return the list of classes that the point is
 in, with the innermost class first and the outermost class last."
   (if class-list
       (let* ((class (caar class-list))
@@ -641,11 +625,11 @@ CLASS and its base classes."
                    (jtags-get-surrounding-classes (buffer-file-name))
                  (list class))))
       (jtags-message "Source classes=%S" src)
-      (jtags-uniqify-list (jtags-get-class-list-iter src)))))
+      (delete-dups (jtags-get-class-list-iter src)))))
 
 (defun jtags-get-class-list-iter (class-list)
   "Return the class hierarchies for all classes in CLASS-LIST as a flat list.
-Subfunction used by `jtags-get-class-list'. Example:
+Subfunction used by `jtags-get-class-list'.  Example:
 
 \(jtags-get-class-list-iter '(\"String\" \"Integer\")) ->
                (\"String\" \"Object\" \"Integer\" \"Number\" \"Object\")"
@@ -704,11 +688,11 @@ This function parses the imports in the current buffer, and calls function
 (defun jtags-find-tag-with-packages (&optional package-list)
   "Look up the identifier around or before point, and return its DEFINITION.
 The optional argument PACKAGE-LIST is a list of package names, or fully
-qualified class names. If specified, only identifiers that match a package
+qualified class names.  If specified, only identifiers that match a package
 in PACKAGE-LIST are considered.
 
 Parse the current buffer, other Java files, and the tags table files in
-`tags-table-list' to find the declaration of the identifier. If found, the
+`tags-table-list' to find the declaration of the identifier.  If found, the
 DEFINITION of the identifier is returned."
   (let* ((identifiers (jtags-parse-java-line))
          (classes (jtags-get-class-list))
@@ -725,14 +709,14 @@ DEFINITION of the identifier is returned."
 (defun jtags-recursive-tags-lookup (identifiers classes &optional package-list)
   "Look up an identifier recursively, and return its DEFINITION.
 IDENTIFIERS is a list of identifiers, starting with the first identifier
-in the expression, and ending with the identifier to look up. CLASSES is
-a list of classes to search for the identifier. If the identifier is found,
-its DEFINITION is returned. The optional argument PACKAGE-LIST is a list
-of package names, or fully qualified class names. If specified, only
+in the expression, and ending with the identifier to look up.  CLASSES is
+a list of classes to search for the identifier.  If the identifier is found,
+its DEFINITION is returned.  The optional argument PACKAGE-LIST is a list
+of package names, or fully qualified class names.  If specified, only
 identifiers that match a package in PACKAGE-LIST are considered.
 
 This function will not look up constructors, as it does not know if an
-identifier refers to a constructor or its class. The DEFINITION of the
+identifier refers to a constructor or its class.  The DEFINITION of the
 class will be returned instead."
   (jtags-message "Identifiers=%S, classes=%S, packages=%S" identifiers classes package-list)
   (when identifiers
@@ -799,8 +783,8 @@ the rest as identifier to look up."
 (defun jtags-local-tags-lookup (identifiers classes)
   "Look up a local variable definition, and return its DEFINITION.
 IDENTIFIERS is a list of identifiers, starting with the first identifier in the
-expression, and ending with the identifier to look up. CLASSES is a list of
-classes, but only the first one is used to search for the identifier. If the
+expression, and ending with the identifier to look up.  CLASSES is a list of
+classes, but only the first one is used to search for the identifier.  If the
 identifier is found, its DEFINITION is returned."
   (jtags-message "Identifiers=%S, classes=%S" identifiers classes)
   (if (or (null identifiers) (null classes))
@@ -831,10 +815,10 @@ identifier is found, its DEFINITION is returned."
   "Look up the identifier around point, and return a list of completions.
 
 The returned list will start with the text to be completed, and continue
-with all matching members in the class, and in its super classes. Members
+with all matching members in the class, and in its super classes.  Members
 that are not visible in the current scope will be discarded, and members
 that are defined in a super class will be marked with text property
-'inherited'. When looking up members in a class (and not an object), only
+'inherited'.  When looking up members in a class (and not an object), only
 static members will be included.
 
 Return nil if there are no matching members."
@@ -930,7 +914,7 @@ Return nil if there are no matching members."
             ;; (jtags-message "Matching members (%d)=%s" (length members) members)
 
             ;; Remove duplicates
-            (setq members (jtags-uniqify-list members))
+            (setq members (delete-dups members))
             (jtags-message "Unique members (%d)=%s" (length members) members)
 
             ;; If there are any matching members, return a list beginning with
@@ -951,7 +935,7 @@ Setting variable `jtags-use-buffer-tag-table-list-flag' to non-nil
 means use the built-in function `buffer-tag-table-list' instead.
 
 The primary difference between this function, and `buffer-tag-table-list',
-is that this function does not load the tags table files in the list. This
+is that this function does not load the tags table files in the list.  This
 means that you can call this function before creating the tags table files."
   (cond ((not (boundp 'tag-table-alist))
          tags-table-list)
@@ -989,19 +973,19 @@ means that you can call this function before creating the tags table files."
                  (setq expression (concat (jtags-file-name-directory expression) "TAGS")))
                (push expression result)))
            (or result (error "Buffer has no associated tag tables"))
-           (jtags-uniqify-list (nreverse result))))))
+           (delete-dups (nreverse result))))))
 
 (defun jtags-lookup-identifier (class &optional member package-list)
   "Look up an identifier in the tags table files, and return its DEFINITION.
 
-Look up the CLASS and its MEMBER in the tags table files. If no MEMBER is
-provided, just look up the CLASS. The optional argument PACKAGE-LIST is a list
-of package names, or fully qualified class names. If specified, a check is made
-to verify that CLASS belongs to one of the packages in the list, see function
-`jtags-right-package-p'.
+Look up the CLASS and its MEMBER in the tags table files.  If no MEMBER is
+provided, just look up the CLASS.  The optional argument PACKAGE-LIST is a
+list of package names, or fully qualified class names.  If specified, a check
+is made to verify that CLASS belongs to one of the packages in the list, see
+function `jtags-right-package-p'.
 
 Looking up a constructor will work if CLASS is equal to MEMBER, and CLASS has
-a defined constructor. Default constructors will not be looked up."
+a defined constructor.  Default constructors will not be looked up."
   (save-excursion
     (jtags-message "Class=`%s', member=`%s', packages=%S" class member package-list)
 
@@ -1057,7 +1041,7 @@ a defined constructor. Default constructors will not be looked up."
 (defun jtags-lookup-class-members (class &optional package-list)
   "Return a list of all members in CLASS, or nil if CLASS is not found.
 The optional argument PACKAGE-LIST is a list of package names, or fully
-qualified class names. If specified, a check is made to verify that CLASS
+qualified class names.  If specified, a check is made to verify that CLASS
 belongs to one of the packages in the list, see `jtags-right-package-p'."
   (save-excursion
     (jtags-message "Class=`%s', packages=%S" class package-list)
@@ -1116,8 +1100,8 @@ If no class declaration is found, return nil."
   "Look in CLASS, and return type, line and position of MEMBER.
 
 Parse CLASS (up to position BOUND) in the tags table file and
-return the type, line and position of MEMBER. Return nil if
-MEMBER is not found. Used by `jtags-lookup-identifier'."
+return the type, line and position of MEMBER.  Return nil if
+MEMBER is not found."
   (if member
       (block while-tag-line
         (while (re-search-forward jtags-tag-line-regexp bound t)
@@ -1127,23 +1111,20 @@ MEMBER is not found. Used by `jtags-lookup-identifier'."
             (when (string-equal member found-member)
               (jtags-message "Found member `%s' at pos %s" member pos)
 
-              ;; If another member is declared at the same point this is an invalid tag
-              (unless (jtags-next-member-same-pos-p member pos bound)
+              ;; If we are looking for a constructor (member and class names are equal)
+              (if (string-equal member class)
+                  (return-from while-tag-line (list member
+                                                    (string-to-number line)
+                                                    (string-to-number pos)))
 
-                ;; If we are looking for a constructor (member and class names are equal)
-                (if (string-equal member class)
-                    (return-from while-tag-line (list member
+                ;; Not constructor - find member type
+                (goto-char (match-beginning 3))
+
+                ;; If we can match a type name
+                (if (re-search-backward (concat "[ \t\n]+" jtags-type-regexp) nil t)
+                    (return-from while-tag-line (list (match-string 2)
                                                       (string-to-number line)
-                                                      (string-to-number pos)))
-
-                  ;; Not constructor - find member type
-                  (goto-char (match-beginning 3))
-
-                  ;; If we can match a type name
-                  (if (re-search-backward (concat "[ \t\n]+" jtags-type-regexp) nil t)
-                      (return-from while-tag-line (list (match-string 2)
-                                                        (string-to-number line)
-                                                        (string-to-number pos))))))))))
+                                                      (string-to-number pos)))))))))
 
     ;; No member supplied - we are looking for a class or interface or enum
     (end-of-line)
@@ -1151,21 +1132,6 @@ MEMBER is not found. Used by `jtags-lookup-identifier'."
         (list (match-string 1)
               (string-to-number (match-string 2))
               (string-to-number (match-string 3))))))
-
-(defun jtags-next-member-same-pos-p (member pos bound)
-  "Return non-nil if next member in class is declared at same POS as MEMBER.
-The search is bounded by BOUND, which should be the end of the class.
-
-This function exists because of a bug in the etags program in GNU Emacs 21."
-  (when (and (not (featurep 'xemacs)) (< emacs-major-version 22))
-    (save-excursion
-      (save-match-data
-        (if (re-search-forward jtags-tag-line-regexp bound t)
-            (let ((next-member (match-string 3))
-                  (next-pos (match-string 7)))
-              (when (string-equal pos next-pos)
-                ;; (jtags-message "Found members `%s' and `%s' at same pos, ignoring `%s'" member next-member member)
-                next-member)))))))
 
 (defun jtags-get-tagged-members (class bound)
   "Return a list of all unique members declared in CLASS.
@@ -1181,8 +1147,7 @@ final, private, protected, public, and static."
             (pos (match-string 7)))
         ;; (jtags-message "Found member `%s' at pos %s" member pos)
 
-        (unless (or (jtags-next-member-same-pos-p member pos bound)
-                    (member member member-list)
+        (unless (or (member member member-list)
                     (equal member "static")) ;; Ignore static class initializer
 
           ;; Set text properties to keep track of the member's Java properties
@@ -1219,12 +1184,12 @@ Unfortunately, the function `file-of-tag' sometimes fails in XEmacs."
 	(buffer-substring start-pos end-pos)))))
 
 (defun jtags-right-package-p (file-name package-list)
-  "Return non-nil if the package in FILE-NAME matches one in PACKAGE-LIST.
+  "Return non-nil if the package in FILE-NAME is found in PACKAGE-LIST.
 
 FILE-NAME is the absolute file name of the class/package to check.
-PACKAGE-LIST is a list of package names, e.g. \"java.io.*\", or fully qualified
-class names, e.g. \"java.io.InputStream\". Package names must end with the wild
-card character \"*\"."
+PACKAGE-LIST is a list of package names, e.g. \"java.io.*\", or fully
+qualified class names, e.g. \"java.io.InputStream\".  Package names
+must end with the wild card character \"*\"."
   (if (null package-list)
       't
     (block while-package-list
@@ -1301,9 +1266,9 @@ after first querying the user about each file."
 (defun jtags-update-this-tags-file ()
   "Update the tags table file in which this class is tagged.
 
-Use `tags-table-list' to find the tags table file in which the class
-in the current buffer is tagged. Update the tags table file using the
-etags program."
+Use `tags-table-list' to find the tags table file in which the
+class in the current buffer is tagged.  Update the tags table
+file using the etags program."
   (interactive)
   (let ((norm-default-dir (jtags-file-name-directory default-directory)))
     (jtags-message "Normalized default directory=`%s'" norm-default-dir)
@@ -1334,9 +1299,10 @@ An argument that is a directory means the file \"TAGS\" in that directory."
 
 (defun jtags-run-etags (file-name dir-name)
   "Run shell command in `jtags-etags-command' to update a tags table file.
-Replace the sequence %f with FILE-NAME in `jtags-etags-command', and run the
-resulting shell command in directory DIR-NAME. This normally includes running
-the etags program, so the Emacs \"bin\" directory must be in your path."
+Replace the sequence %f with FILE-NAME in `jtags-etags-command', and run
+the resulting shell command in directory DIR-NAME.  This normally includes
+running the etags program, so the Emacs \"bin\" directory must be in your
+path."
   (let ((command (replace-regexp-in-string "%f" file-name jtags-etags-command))
         (original-directory default-directory))
     (jtags-message "Shell command=%s" command)
@@ -1367,11 +1333,11 @@ the etags program, so the Emacs \"bin\" directory must be in your path."
 
 (defun jtags-find-identifier-backward ()
   "Return identifier before point in an expression.
-Search backward for an identifier in the expression around point, set point to
-the first character in the identifier, and return the identifier. If a constant
-string, e.g. \"foo\" is found, the string \"#stringliteral#\" is returned, and
-the point is set to the end of the string. Return nil if no identifier can be
-found."
+Search backward for an identifier in the expression around point, set point
+to the first character in the identifier, and return the identifier.  If a
+constant string, e.g. \"foo\" is found, the string \"#stringliteral#\" is
+returned, and the point is set to the end of the string. Return nil if no
+identifier can be found."
   (let ((end (point)))
     (jtags-message "Before='%c', after='%c'" (char-before) (char-after))
     (cond ((looking-back "[A-Za-z0-9_]")                ; identifier?
@@ -1397,16 +1363,16 @@ found."
 (defun jtags-parse-java-line ()
   "Parse expression around point, and return a list of identifiers.
 The list starts with the first identifier in the expression, and
-ends with the identifier we want to lookup. Example:
+ends with the identifier we want to lookup.  Example:
 
 toString().substring(1).length() -> (\"toString\" \"substring\" \"length\")
 
 The identifiers returned are names of attributes or methods, and the
-first one can actually be a class name. Example:
+first one can actually be a class name.  Example:
 
 Class.forName(\"Foo\") -> (\"Class\" \"forName\")
 
-The expression can also start with a string literal. Example:
+The expression can also start with a string literal.  Example:
 
 \"foo\".toUpper() -> (\"#stringliteral#\" \"toUpper\")"
   (save-excursion
@@ -1427,7 +1393,7 @@ The expression can also start with a string literal. Example:
 
 (defun jtags-beginning-of-method (&optional bound)
   "Move backward to the beginning of the current method.
-Return non-nil unless search stops due to beginning of buffer. The
+Return non-nil unless search stops due to beginning of buffer.  The
 search is bounded by BOUND, which should be the start of the class."
   (interactive)
   (let (start-pos     ;;                 RETURN TYPE           METHOD NAME               ARGS
@@ -1461,7 +1427,7 @@ search is bounded by BOUND, which should be the start of the class."
 
 (defun jtags-find-declaration (var class-start-line)
   "Look backwards for a declaration of VAR, and return its declaration info.
-The search is bounded by CLASS-START-LINE. If VAR is found, return a list
+The search is bounded by CLASS-START-LINE.  If VAR is found, return a list
 with the following elements:
 
 '(type        ; The type of VAR
@@ -1521,7 +1487,7 @@ with the following elements:
 (defun jtags-find-imports (&optional current-package)
   "Find import statements, and return a list of package names.
 The optional argument CURRENT-PACKAGE is the package of the file in the
-current buffer. The package names may, or may not end with \".*\"."
+current buffer.  The package names may, or may not end with \".*\"."
   (save-excursion
     (let (list)
 
@@ -1543,32 +1509,11 @@ current buffer. The package names may, or may not end with \".*\"."
                  (clean-name (replace-regexp-in-string "[ \t\n]" "" package-name)))
             ;; (jtags-message "Package=`%s', cleaned=`%s'" package-name clean-name)
             (setq list (cons clean-name list)))))
-      (jtags-uniqify-list (nreverse list)))))
+      (delete-dups (nreverse list)))))
 
 ;; ----------------------------------------------------------------------------
 ;; Functions for showing Javadoc:
 ;; ----------------------------------------------------------------------------
-
-(defun jtags-find-javadoc (class package javadoc-root-list)
-  "This method has been deprecated, and will be removed."
-  (message "Variable jtags-javadoc-root-list has been deprecated, use jtags-javadoc-root-alist instead.")
-  (dolist (javadoc-root javadoc-root-list)
-    (setq javadoc-root (jtags-file-name-directory javadoc-root))
-    (jtags-message "Normalized javadoc-root: `%s'" javadoc-root)
-
-    (let ((javadoc-file (concat javadoc-root package "/" class ".html")))
-      (jtags-message "Looking for Javadoc file `%s'" javadoc-file)
-      (if (file-regular-p javadoc-file)
-          (return javadoc-file)))))
-
-(defun jtags-browse-url-old (package-name class-name)
-  "This method has been deprecated, and will be removed."
-  (setq package-name (replace-regexp-in-string "\\\." "/" package-name))
-  (let ((javadoc-file (jtags-find-javadoc class-name package-name jtags-javadoc-root-list)))
-    (if (not javadoc-file)
-        (message "Documentation not found!")
-      (message "Displaying URL %s" javadoc-file)
-      (funcall jtags-browse-url-function javadoc-file))))
 
 (defun jtags-browse-url (definition)
   "Show Javadoc for the class in DEFINITION in the configured browser.
@@ -1580,8 +1525,6 @@ class, and display it in the configured browser."
     (if (null package-name)
         (setq package-name ""))
     (jtags-message "Looking for Javadoc for class `%s' in package `%s'" class-name package-name)
-    (if jtags-javadoc-root-list
-        (jtags-browse-url-old package-name class-name)
 
     ;; Find matching javadoc root
     (let ((javadoc-root (assoc-default package-name jtags-javadoc-root-alist 'string-match)))
@@ -1593,7 +1536,7 @@ class, and display it in the configured browser."
             (setq javadoc-root (concat javadoc-root "/")))
         (let ((javadoc-file (concat javadoc-root package-name "/" class-name ".html")))
           (message "Displaying URL %s" javadoc-file)
-          (funcall jtags-browse-url-function javadoc-file)))))))
+          (funcall jtags-browse-url-function javadoc-file))))))
 
 ;; ----------------------------------------------------------------------------
 ;; Initialization:
