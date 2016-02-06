@@ -4,7 +4,7 @@
 
 ;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
 ;; Created: Oct 2007
-;; Version: 0.3.1
+;; Version: 0.98.0
 ;; Keywords: languages, tools
 ;; URL: http://jtags.sourceforge.net
 
@@ -110,7 +110,7 @@ A nil value means that new imports will be added last in the list."
 ;; Private variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst jtags-extras-version "0.3.1"
+(defconst jtags-extras-version "0.98.0"
   "The current version of `jtags-extras'.")
 
 ;; ----------------------------------------------------------------------------
@@ -220,7 +220,7 @@ at the beginning of the next line."
     (goto-char (point-min))
     (while (re-search-forward "\\(package\\|import\\)[ \t]+[^\n;]*;[^\n]*[\n]" nil t)
       (goto-char (match-beginning 0))
-      (if (not (c-in-literal))
+      (if (not (jtags-in-literal))
           (setq last-import-pos (match-end 0)))
       (goto-char (match-end 0)))
     (goto-char last-import-pos)))
@@ -238,7 +238,7 @@ If there are no import statements in this file, return nil."
         ;; Set start to the beginning of the previous line,
         ;; but ignore matches in comments and strings
         (goto-char (match-beginning 0))
-        (when (not (c-in-literal))
+        (when (not (jtags-in-literal))
           (if (null start)
               (setq start (match-beginning 0)))
           (setq end (match-end 0)))

@@ -6,6 +6,13 @@ JTAGS
 Changes between versions 0.97 and 0.98.0 (TDB)
 ----------------------------------------------
 
+- Added support for Java 8 constructs: default methods, method references,
+  lambdas.
+
+- Added hook to be run after updating tags table files.
+
+- Using etags-goto-tag-location to improve precision in locating tags.
+
 - Removed deprecated variables and methods.
 
 - Droppped support for GNU Emacs 21.
@@ -164,6 +171,12 @@ Changes between versions 0.91 and 0.92 (2001-09-10)
 
 
 JTAGS-EXTRAS
+
+
+Changes between versions 0.3.0 and 0.98.0 (TBD)
+-----------------------------------------------
+
+- Using internal jtags-in-literal instead of c-in-literal.
 
 
 Changes between versions 0.2.0 and 0.3.0 (2018-01-18)

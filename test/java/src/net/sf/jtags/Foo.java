@@ -25,6 +25,9 @@ import javax.swing.JTable;
 
 import org.xml.sax.XMLReader;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 public final class    Foo extends java.io.IOException implements Serializable {
 
     private static Logger TLOG = Logger.getLogger(Foo.class.getName());
@@ -33,9 +36,9 @@ public final class    Foo extends java.io.IOException implements Serializable {
 
     private static String[] Static = null;
 
-    private final static String FinalStatic = null;
+    private static final String StaticFinal = null;
 
-    private File file = null;
+    private File file;
 
     private String name = "This string has the word import in it.";
 
@@ -51,7 +54,7 @@ public final class    Foo extends java.io.IOException implements Serializable {
 
         // This comment does not end with a period
         if (name == null) {
-            this.name = "Foo";
+            this.name = Final + Static + StaticFinal;
         }
 
         try {
@@ -131,9 +134,8 @@ class Bar {
     }
 
     public Foo getFoo() {
-        TLOG.log(Level.WARNING, "Returning foo");
         TLOG.log(Level.INFO, "Gurkburk=" + gurkburk);
-        return foo.gurka("Apa!", new Double(Double.MAX_VALUE));
+        return foo.gurka("Foo!", new Double(Double.MAX_VALUE));
     }
 
     public Foo getFooo() {
@@ -264,6 +266,7 @@ class Axe extends net.sf.jtags.Bar {
 
         InnerClass ic = new InnerClass();
         Foo foo = ic.calculate("foo");
+        foo = getFoo();
     }
 
     class InnerClass {
@@ -278,9 +281,36 @@ class Axe extends net.sf.jtags.Bar {
         return bar;
     }
 
+    public void java8(List<Integer> list) {
+        List<Integer> filteredList = list
+            .stream()
+            .filter(i -> i > 0)
+            .collect(toList());
+
+        Set<String> setOfStrings = filteredList.stream().map(this::intToString).collect(toSet());
+
+        Set<Integer> setOfIntegers = setOfStrings
+            .stream()
+            .map(Integer::valueOf)
+            .collect(toSet());
+
+        long num = setOfIntegers
+            .stream()
+            .filter(theInt -> {
+                    // theInt -> theInt > 0
+                    if (theInt > 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                })
+            .sorted()
+            .count();
+    }
+
+    private String intToString(Integer i) { return i.toString(); }
+
     public void lastInFile() {
-        Thread t = new Thread();
-        t.run();
         lastInFile();
     }
 }

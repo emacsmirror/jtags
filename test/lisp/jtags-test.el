@@ -107,9 +107,9 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 ;; Evaluate this expression to define the functions above!
 (save-excursion
   (beginning-of-defun)
-  (eval-region (point-min) (point) 't))
+  (eval-region (point-min) (point) t))
 
-(setq jtags-trace-flag 't)
+(setq jtags-trace-flag t)
 
 ;; ----------------------------------------------------------------------------
 ;; Unit test:
@@ -163,35 +163,92 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 (assert-equal "/bin/"       '(jtags-file-name-directory "/bin/"))
 (assert-equal "/bin/"       '(jtags-file-name-directory "/bin/sh"))
 
+;;; jtags-get-class-list
+
+(assert-equal '("Comparable" "Double" "Number" "Object" "Serializable")
+              '(sort (jtags-get-class-list "Double" '("java.lang.*" "java.awt.*")) 'string<))
+(assert-equal '("Accessible" "Component" "ImageObserver" "ItemSelectable" "List" "MenuContainer" "Object" "Serializable")
+              '(sort (jtags-get-class-list "List" '("java.lang.*" "java.awt.*")) 'string<))
+
 ;;; jtags-get-class-list-iter
 
-(assert-equal '("String" "Object")
-              '(jtags-get-class-list-iter '("String")))
-(assert-equal '("String" "Object" "Integer" "Number" "Object")
-              '(jtags-get-class-list-iter '("String" "Integer")))
-(assert-equal '("JComboBox" "JComponent" "Container" "Component" "Object"
-                "JScrollPane" "JComponent" "Container" "Component" "Object")
-              '(jtags-get-class-list-iter '("JComboBox" "JScrollPane")))
+(assert-equal '("CharSequence" "Comparable" "Object" "Serializable" "String")
+              '(sort (jtags-get-class-list-iter '("String") '("java.lang.*")) 'string<))
+(assert-equal '("CharSequence" "Comparable" "Comparable" "Integer" "Number" "Object" "Object"
+                "Serializable" "Serializable" "String")
+              '(sort (jtags-get-class-list-iter '("String" "Integer") '("java.lang.*" "java.util.List")) 'string<))
+(assert-equal '("Accessible" "Accessible" "ActionListener" "Component" "Component" "Container" "Container"
+                "EventListener" "EventListener" "HasGetTransferHandler" "HasGetTransferHandler" "ImageObserver"
+                "ImageObserver" "ItemSelectable" "JComboBox" "JComponent" "JComponent" "JScrollPane"
+                "ListDataListener" "MenuContainer" "MenuContainer" "Object" "Object" "ScrollPaneConstants"
+                "Serializable" "Serializable" "Serializable" "Serializable")
+              '(sort (jtags-get-class-list-iter '("JComboBox" "JScrollPane") '("java.lang.*" "javax.swing.*")) 'string<))
+;; Returns only JComboBox since it cannot be found in specified packages
+(assert-equal '("JComboBox" "Object")
+              '(sort (jtags-get-class-list-iter '("JComboBox") '("java.lang.*")) 'string<))
 
 ;;; jtags-do-get-class-list
 
-(assert-equal '("FooBar")
-              '(jtags-do-get-class-list "FooBar"))
 (assert-equal '("Object")
-              '(jtags-do-get-class-list "Object"))
-(assert-equal '("String" "Object")
-              '(jtags-do-get-class-list "String"))
-(assert-equal '("BufferedReader" "Reader" "Object")
-              '(jtags-do-get-class-list "BufferedReader"))
-(assert-equal '("JFrame" "Frame" "Window" "Container" "Component" "Object")
-              '(jtags-do-get-class-list "JFrame"))
+              '(sort (jtags-do-get-class-list "Object") 'string<))
+(assert-equal '("FooBar" "Object")
+              '(sort (jtags-do-get-class-list "FooBar") 'string<))
+(assert-equal '("CharSequence" "Comparable" "Object" "Serializable" "String")
+              '(sort (jtags-do-get-class-list "String") 'string<))
+(assert-equal '("Accessible" "Accessible" "Component" "Container" "Frame" "HasGetTransferHandler" "ImageObserver" "JFrame"
+                "MenuContainer" "MenuContainer" "Object" "RootPaneContainer" "Serializable" "Window" "WindowConstants")
+              '(sort (jtags-do-get-class-list "JFrame") 'string<))
+;; With packages
+(assert-equal '("CharSequence" "Comparable" "Object" "Serializable" "String")
+              '(sort (jtags-do-get-class-list "String" '("java.lang.*")) 'string<))
+(assert-equal '("Comparable" "Double" "Number" "Object" "Serializable")
+              '(sort (jtags-do-get-class-list "Double" '("java.lang.*")) 'string<))
+(assert-equal '("Accessible" "Component" "ImageObserver" "ItemSelectable" "List" "MenuContainer" "Object" "Serializable")
+              '(sort (jtags-do-get-class-list "List" '("java.lang.*" "java.awt.List")) 'string<))
+(assert-equal '("AbstractCollection" "AbstractSet" "Cloneable" "Collection" "Collection" "Collection" "HashSet"
+                "Iterable" "Iterable" "Iterable" "Object" "Serializable" "Set" "Set")
+              '(sort (jtags-do-get-class-list "HashSet" '("java.lang.*" "java.util.ArrayList" "java.util.HashSet")) 'string<))
+;; Interfaces
+(assert-equal '("Collection" "Iterable" "List" "Object")
+              '(sort (jtags-do-get-class-list "List" '("java.lang.*" "java.util.List")) 'string<))
 
-(assert-equal '("String" "Object")
-              '(jtags-do-get-class-list "String" '("java.lang.*")))
-(assert-equal '("Double" "Number" "Object")
-              '(jtags-do-get-class-list "Double" '("java.lang.*")))
-(assert-equal '("HashSet" "AbstractSet" "AbstractCollection" "Object")
-              '(jtags-do-get-class-list "HashSet" '("java.lang.*" "java.util.ArrayList" "java.util.HashSet")))
+;;; jtags-find-super-class
+
+(assert-equal "Number"
+              '(cdr (jtags-find-super-class (jtags-lookup-identifier "Double" nil '("java.lang.*")))))
+(assert-equal "Component"
+              '(cdr (jtags-find-super-class (jtags-lookup-identifier "List" nil '("java.lang.*" "java.awt.*")))))
+(assert-equal "Collection"
+              '(cdr (jtags-find-super-class (jtags-lookup-identifier "List" nil '("java.lang.*" "java.util.*")))))
+(assert-equal "Iterable"
+              '(cdr (jtags-find-super-class (jtags-lookup-identifier "Collection" nil '("java.util.Collection")))))
+(assert-equal "AbstractSet"
+              '(cdr (jtags-find-super-class (jtags-lookup-identifier "HashSet" nil '("java.util.*")))))
+
+(assert-false '(jtags-find-super-class (jtags-lookup-identifier "Number" nil '("java.lang.*"))))
+(assert-false '(jtags-find-super-class (jtags-lookup-identifier "Iterable" nil '("java.lang.*"))))
+
+;;; jtags-find-interfaces
+
+(assert-true '(let ((result (jtags-find-interfaces (jtags-lookup-identifier "Long" nil '("java.lang.*")))))
+                (and (equal '("Comparable") (cdr result))
+                     (member "java.lang.*" (car result)))))
+(assert-true '(let ((result (jtags-find-interfaces (jtags-lookup-identifier "String" nil '("java.lang.String")))))
+                (and (equal '("Serializable" "Comparable" "CharSequence") (cdr result))
+                     (member "java.io.Serializable" (car result))
+                     (member "java.lang.*" (car result)))))
+(assert-true '(let ((result (jtags-find-interfaces (jtags-lookup-identifier "HashSet" nil '("java.util.HashSet")))))
+                (and (equal '("Set" "Cloneable" "Serializable") (cdr result))
+                     (member "java.io.Serializable" (car result))
+                     (member "java.lang.*" (car result))
+                     (member "java.util.*" (car result)))))
+(assert-true '(let ((result (jtags-find-interfaces (jtags-lookup-identifier "JLabel" nil '("java.lang.*" "javax.swing.*")))))
+                (and (equal '("SwingConstants" "Accessible") (cdr result))
+                     (member "javax.swing.*" (car result))
+                     (member "javax.accessibility.*" (car result)))))
+
+(assert-false '(jtags-find-interfaces (jtags-lookup-identifier "Object" nil '("java.lang.*"))))
+(assert-false '(jtags-find-interfaces (jtags-lookup-identifier "List" nil '("java.util.*"))))
 
 ;;; jtags-recursive-tags-lookup
 
@@ -396,74 +453,86 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 
 ;;; jtags-lookup-identifier
 
-(assert-true '(let ((definition (jtags-lookup-identifier "String")))
-                (and definition
-                     (string-equal (jtags-definition-package definition) "java.lang")
-                     (string-equal (jtags-definition-class definition) "String")
-                     (string-equal (jtags-definition-name definition) "String")
-                     (string-equal (jtags-definition-type definition) "class"))))
+;; Class
 (assert-true '(let ((definition (jtags-lookup-identifier "JList")))
                 (and definition
                      (string-equal (jtags-definition-package definition) "javax.swing")
                      (string-equal (jtags-definition-class definition) "JList")
                      (string-equal (jtags-definition-name definition) "JList")
-                     (string-equal (jtags-definition-type definition) "class"))))
+                     (string-equal (jtags-definition-type definition) "class")
+                     (string-match "class JList" (jtags-definition-text definition)))))
+;; Constructor
 (assert-true '(let ((definition (jtags-lookup-identifier "String" "String")))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "String")
                      (string-equal (jtags-definition-name definition) "String")
-                     (string-equal (jtags-definition-type definition) "String"))))
+                     (string-equal (jtags-definition-type definition) "String")
+                     (string-match "String(" (jtags-definition-text definition)))))
+;; Member
 (assert-true '(let ((definition (jtags-lookup-identifier "String" "split")))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "String")
                      (string-equal (jtags-definition-name definition) "split")
-                     (string-equal (jtags-definition-type definition) "String"))))
+                     (string-equal (jtags-definition-type definition) "String")
+                     (string-match "split(" (jtags-definition-text definition)))))
+;; Class with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "Double" nil '("java.lang.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "Double")
                      (string-equal (jtags-definition-name definition) "Double")
-                     (string-equal (jtags-definition-type definition) "class"))))
+                     (string-equal (jtags-definition-type definition) "class")
+                     (string-match "class Double" (jtags-definition-text definition)))))
+;; Member with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "Double" "doubleValue" '("java.io.*" "java.lang.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "Double")
                      (string-equal (jtags-definition-name definition) "doubleValue")
-                     (string-equal (jtags-definition-type definition) "double"))))
+                     (string-equal (jtags-definition-type definition) "double")
+                     (string-match "doubleValue(" (jtags-definition-text definition)))))
+;; Interface with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "Comparable" nil '("java.util.List" "java.io.*" "java.lang.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.lang")
                      (string-equal (jtags-definition-class definition) "Comparable")
                      (string-equal (jtags-definition-name definition) "Comparable")
-                     (string-equal (jtags-definition-type definition) "interface"))))
+                     (string-equal (jtags-definition-type definition) "interface")
+                     (string-match "interface Comparable" (jtags-definition-text definition)))))
+;; Member with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "FlatteningPathIterator" "cury")))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.awt.geom")
                      (string-equal (jtags-definition-class definition) "FlatteningPathIterator")
                      (string-equal (jtags-definition-name definition) "cury")
-                     (string-equal (jtags-definition-type definition) "double"))))
+                     (string-equal (jtags-definition-type definition) "double")
+                     (string-match "cury" (jtags-definition-text definition)))))
+;; Ambiguous class with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "List" nil '("java.io.*" "java.awt.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.awt")
                      (string-equal (jtags-definition-class definition) "List")
                      (string-equal (jtags-definition-name definition) "List")
-                     (string-equal (jtags-definition-type definition) "class"))))
+                     (string-equal (jtags-definition-type definition) "class")
+                     (string-match "class List" (jtags-definition-text definition)))))
+;; Ambiguous interface with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "List" nil '("java.io.*" "java.util.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.util")
                      (string-equal (jtags-definition-class definition) "List")
                      (string-equal (jtags-definition-name definition) "List")
-                     (string-equal (jtags-definition-type definition) "interface"))))
-
-;; FAILS with JDK < 1.5.x (type is "Object")
+                     (string-equal (jtags-definition-type definition) "interface")
+                     (string-match "interface List" (jtags-definition-text definition)))))
+;; Generic member with packages
 (assert-true '(let ((definition (jtags-lookup-identifier "Iterator" "next" '("java.io.*" "java.util.Iterator" "java.lang.*"))))
                 (and definition
                      (string-equal (jtags-definition-package definition) "java.util")
                      (string-equal (jtags-definition-class definition) "Iterator")
                      (string-equal (jtags-definition-name definition) "next")
-                     (string-equal (jtags-definition-type definition) "E"))))
+                     (string-equal (jtags-definition-type definition) "E")
+                     (string-match "next(" (jtags-definition-text definition)))))
 
 (assert-false '(jtags-lookup-identifier "java"))
 (assert-false '(jtags-lookup-identifier "javax"))
@@ -488,43 +557,43 @@ public final class Integer Integer41,1265
     double curx, cury;Integer.cury70,2325
 ;; <<< TEST DATA
 
-(assert-equal '("class" 41 1265)
+(assert-equal '("class" 41 1265 "public final class Integer ")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" nil bound)))
-(assert-equal '("int" 606 21687)
+(assert-equal '("int" 606 21687 "    private int count;")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "count" bound)))
-(assert-equal '("char" 607 21700)
+(assert-equal '("char" 607 21700 "    private char tjipp[")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "tjipp" bound)))
-(assert-equal '("int" 46 1445)
+(assert-equal '("int" 46 1445 "    public static final int   MIN_VALUE ")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "MIN_VALUE" bound)))
-(assert-equal '("String" 115 4262)
+(assert-equal '("String" 115 4262 "    public static String toString(")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "toString" bound)))
-(assert-equal '("int" 541 19127)
+(assert-equal '("int" 541 19127 "    public static int parseInt(")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "parseInt" bound)))
-(assert-equal '("Integer" 632 22662)
+(assert-equal '("Integer" 632 22662 "    public Integer(")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "Integer" bound)))
-(assert-equal '("String" 2163 85659)
+(assert-equal '("String" 2163 85659 "    public String[] split(")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "split" bound)))
-(assert-equal '("double" 70 2325)
+(assert-equal '("double" 70 2325 "    double curx, cury;")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "cury" bound)))
-(assert-equal '("double" 70 2325)
+(assert-equal '("double" 70 2325 "    double curx,")
               '(let ((bound (point)))
                  (goto-test ";;; jtags-get-tagged-type-line-pos" 4)
                  (jtags-get-tagged-type-line-pos "Integer" "curx" bound)))
@@ -566,6 +635,9 @@ System.out.println
 "println"
 ;; toString
 Class.
+Double::
+this::foo
+for (String myString : strings
 ;; <<< TEST DATA
 
 (assert-equal '"foo"
@@ -580,6 +652,12 @@ Class.
               '(progn (goto-test ";;; jtags-find-identifier-backward" 7 't) (jtags-find-identifier-backward)))
 (assert-equal '"Class"
               '(progn (goto-test ";;; jtags-find-identifier-backward" 8 't) (jtags-find-identifier-backward)))
+(assert-equal '"Double"
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 9 't) (jtags-find-identifier-backward)))
+(assert-equal '"foo"
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 10 't) (jtags-find-identifier-backward)))
+(assert-equal '"strings"
+              '(progn (goto-test ";;; jtags-find-identifier-backward" 11 't) (jtags-find-identifier-backward)))
 
 ;;; jtags-in-literal
 
@@ -621,6 +699,9 @@ bar.split
 ;; The next expression is split over two lines
 aaa().bbb().
 ccc().ddd
+this::methodRef
+Double::valueOf
+for (String myString : strings
 ;; <<< TEST DATA
 
 (assert-equal '("toString" "substring" "length")
@@ -647,6 +728,12 @@ ccc().ddd
               '(progn (goto-test ";;; jtags-parse-java-line" 15 't) (jtags-parse-java-line)))
 (assert-equal '("aaa" "bbb" "ccc" "ddd")
               '(progn (goto-test ";;; jtags-parse-java-line" 18 't) (jtags-parse-java-line)))
+(assert-equal '("this" "methodRef")
+              '(progn (goto-test ";;; jtags-parse-java-line" 19 't) (jtags-parse-java-line)))
+(assert-equal '("Double" "valueOf")
+              '(progn (goto-test ";;; jtags-parse-java-line" 20 't) (jtags-parse-java-line)))
+(assert-equal '("strings")
+              '(progn (goto-test ";;; jtags-parse-java-line" 21 't) (jtags-parse-java-line)))
 
 ;;; jtags-find-package
 
