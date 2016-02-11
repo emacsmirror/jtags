@@ -25,6 +25,7 @@ import javax.swing.JTable;
 
 import org.xml.sax.XMLReader;
 
+import static java.util.logging.Logger.getLogger;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -102,6 +103,8 @@ public final class    Foo extends java.io.IOException implements Serializable {
      */
     public XMLReader getReader(String name)
     {
+        // getLogger is a static import
+        Logger logger = getLogger(this.getClass().getName());
         XMLReader reader = null;
         return reader;
     }

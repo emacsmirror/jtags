@@ -9,6 +9,8 @@ Changes between versions 0.97 and 0.98.0 (TDB)
 - Added support for Java 8 constructs: default methods, method references,
   lambdas.
 
+- Added support for static imports.
+
 - Added hook to be run after updating tags table files.
 
 - Using etags-goto-tag-location to improve precision in locating tags.

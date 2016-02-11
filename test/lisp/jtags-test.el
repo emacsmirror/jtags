@@ -109,7 +109,7 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
   (beginning-of-defun)
   (eval-region (point-min) (point) t))
 
-(setq jtags-trace-flag t)
+(setq jtags-trace-flag nil)
 
 ;; ----------------------------------------------------------------------------
 ;; Unit test:
@@ -387,6 +387,22 @@ If the test fails, a message is printed in the \"*Messages*\" buffer."
 ;; Invalid package for class lookup
 (assert-false '(jtags-recursive-tags-lookup-with-package '("java" "lang" "File")))
 (assert-false '(jtags-recursive-tags-lookup-with-package '("java" "io" "String")))
+
+;;; jtags-import-tags-lookup
+
+(let ((definition (jtags-import-tags-lookup '("toList") '("java.lang.*" "static java.util.stream.Collectors.toList"))))
+  (assert-true definition)
+  (assert-equal "java.util.stream" '(jtags-definition-package definition))
+  (assert-equal "Collectors" '(jtags-definition-class definition))
+  (assert-equal "toList" '(jtags-definition-name definition))
+  (assert-equal "Collector" '(jtags-definition-type definition)))
+(let ((definition (jtags-import-tags-lookup '("valueOf" "toHexString") '("static java.lang.Double.valueOf"))))
+  (assert-true definition)
+  (assert-equal "java.lang" '(jtags-definition-package definition))
+  (assert-equal "Double" '(jtags-definition-class definition))
+  (assert-equal "toHexString" '(jtags-definition-name definition))
+  (assert-equal "String" '(jtags-definition-type definition)))
+(assert-false '(jtags-import-tags-lookup '("toList") '("java.lang.*" "static java.util.Arrays.asList")))
 
 ;;; jtags-buffer-tag-table-list
 
@@ -749,6 +765,8 @@ import foo.bar.event.EventHandler;
 import foo.bar.server.management .*;
 	import foo.bar.util.  connection.  *  ;
 import foo.bar.util.connection.*;
+
+import static java.util.stream.Collectors.toList;
 ;; <<< TEST DATA
 
 (assert-equal "foo.bar.util.config"
@@ -762,7 +780,8 @@ import foo.bar.util.connection.*;
                 "foo.bar.event.EventHandler"
                 "foo.bar.server.base.ConnectionMgr"
                 "foo.bar.server.management.*"
-                "foo.bar.util.connection.*")
+                "foo.bar.util.connection.*"
+                "static java.util.stream.Collectors.toList")
               '(jtags-find-imports))
 (assert-equal '("foo.bar.axe.*"
                 "java.lang.*"
@@ -770,7 +789,8 @@ import foo.bar.util.connection.*;
                 "foo.bar.event.EventHandler"
                 "foo.bar.server.base.ConnectionMgr"
                 "foo.bar.server.management.*"
-                "foo.bar.util.connection.*")
+                "foo.bar.util.connection.*"
+                "static java.util.stream.Collectors.toList")
               '(jtags-find-imports "foo.bar.axe"))
 
 ;;; jtags-extras-match-index
@@ -781,6 +801,7 @@ import foo.bar.util.connection.*;
 (assert-equal 0   '(jtags-extras-match-index '("^java\\." "^javax\\.") "java.util.List"))
 (assert-equal 3   '(jtags-extras-match-index '("^java\\." "^javax\\." "-" "^org\\.") "org.xml.sax.*"))
 (assert-equal nil '(jtags-extras-match-index '("^java\\." "^javax\\." "-" "^org\\.") "com.foo.bar.*"))
+(assert-equal 3   '(jtags-extras-match-index '("^java\\." "^javax\\." "-" "^static ") "static java.util.Arrays.asList"))
 
 ;;; jtags-extras-sort-import-predicate
 

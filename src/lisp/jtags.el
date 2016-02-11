@@ -30,9 +30,16 @@
 ;; While etags knows only the name of the identifier, jtags also knows the
 ;; context in which the identifier is used.  This allows jtags to find the
 ;; correct declaration at once, instead of the declaration that happens to
-;; appear first in the tags table file.  The jtags package also contains a
-;; function for completing partly typed class members, and functions for
-;; managing tags table files.
+;; appear first in the tags table file.
+;;
+;; However, there are cases when jtags cannot lookup tags.  That is because
+;; the etags program included with Emacs does not generate correct tags table
+;; files for Java source code.  For example, the interface java.util.Map is
+;; missing from the tags table files, and therefore cannot be looked up.
+;;
+;; In addition to looking up identifiers and showing their declaration or
+;; documentation, the jtags package also contains a function for completing
+;; partly typed identifiers, and functions for managing tags table files.
 ;;
 ;; The following interactive functions are included in jtags mode:
 ;;
@@ -419,11 +426,15 @@ This variable is used to circle completions.")
 (defvar jtags-find-super-class-cache (make-hash-table :test 'equal)
   "A cache that stores extended super-class per class.")
 
+(defvar jtags-lookup-identifier-cache (make-hash-table :test 'equal)
+  "A cache that stores identifiers looked up in the tags table files.")
+
 (defun jtags-clear-caches ()
   "Clear all caches."
   (interactive)
   (clrhash jtags-find-interfaces-cache)
   (clrhash jtags-find-super-class-cache)
+  (clrhash jtags-lookup-identifier-cache)
   (message "Caches cleared."))
 
 ;; ----------------------------------------------------------------------------
@@ -831,8 +842,13 @@ Parse the current buffer, other Java files, and the tags table files in
 DEFINITION of the identifier is returned."
   (let* ((identifiers (jtags-parse-java-line))
          (classes (jtags-get-class-list nil packages))
-         (definition (jtags-local-tags-lookup identifiers classes packages)))
-    (jtags-message "Local definition=%s" definition)
+         (definition (jtags-import-tags-lookup identifiers packages)))
+    (jtags-message "Import definition=%s" definition)
+
+    ;; If no import definition, find local definition
+    (unless definition
+      (setq definition (jtags-local-tags-lookup identifiers classes packages))
+      (jtags-message "Local definition=%s" definition))
 
     ;; If no local definition, find class member definition
     (unless definition
@@ -840,6 +856,23 @@ DEFINITION of the identifier is returned."
       (jtags-message "Recursive definition=%s" definition))
 
     definition))
+
+(defun jtags-import-tags-lookup (identifiers packages)
+  "Look up an identifier as a static import, and return its DEFINITION.
+IDENTIFIERS is a list of identifiers, starting with the first identifier
+in the expression, and ending with the identifier to look up.  PACKAGES
+is a list of package names, or fully qualified class names."
+  ;; (jtags-message "Identifiers=%S, packages=%S" identifiers packages)
+  (let* ((identifier (car identifiers))
+         (regexp (concat "^static[ \t\n]+"
+                         "\\([A-Za-z0-9_.]+\\\.\\)*\\([A-Za-z0-9_]+\\)\\\."
+                         identifier "$")))
+    (dolist (package packages)
+      (when (string-match regexp package)
+        (let ((package-match (concat (match-string 1 package) (match-string 2 package)))
+              (class-match (match-string 2 package)))
+          (jtags-message "Matched class %s and package %s" class-match package-match)
+          (return (jtags-recursive-tags-lookup identifiers (list class-match) (list package-match))))))))
 
 (defun jtags-recursive-tags-lookup (identifiers classes &optional packages)
   "Look up an identifier recursively, and return its DEFINITION.
@@ -853,7 +886,7 @@ identifiers that match a package in PACKAGES are considered.
 This function will not look up constructors, as it does not know if an
 identifier refers to a constructor or its class.  The DEFINITION of the
 class will be returned instead."
-  ;; (jtags-message "Classes=%S, identifiers=%S, packages=%S" identifiers classes packages)
+  ;; (jtags-message "Identifiers=%S, classes=%S, packages=%S" identifiers classes packages)
   (when identifiers
     (let ((definition nil)
           (looking-for-class (null classes)))
@@ -879,7 +912,7 @@ class will be returned instead."
         ;; in a later call to this function.
         (unless (equal (car classes) (car identifiers))
           (setq definition (jtags-lookup-identifier (car classes) (car identifiers) packages))))
-      (jtags-message "Definition=%s" definition)
+      ;; (jtags-message "Definition=%s" definition)
 
       ;; If we did not find the identifier, look for it in next class
       (if (null definition)
@@ -894,11 +927,12 @@ class will be returned instead."
 
           ;; Otherwise, lookup the next identifier using the class (and its
           ;; base classes) returned from this lookup
-          (let ((found-class (if looking-for-class
-                                 (jtags-definition-class definition)
-                               (jtags-definition-type definition))))
+          (let* ((found-class (if looking-for-class
+                                  (jtags-definition-class definition)
+                                (jtags-definition-type definition)))
+                (found-package (concat (jtags-definition-package definition) "." found-class)))
             (jtags-recursive-tags-lookup (cdr identifiers)
-                                         (jtags-get-class-list found-class))))))))
+                                         (jtags-get-class-list found-class (list found-package)))))))))
 
 (defun jtags-recursive-tags-lookup-with-package (identifiers)
   "Look up an identifier (including package), and return its DEFINITION.
@@ -995,18 +1029,24 @@ Return nil if there are no matching members."
         (setq last-identifier (car (reverse identifiers)))
 
         ;; Find definition of identifier
-        (setq definition (jtags-local-tags-lookup identifiers surrounding-classes imports))
-        (jtags-message "Local definition=%s" definition)
+        (setq definition (jtags-import-tags-lookup identifiers imports))
+        (jtags-message "Import definition=%s" definition)
         (unless definition
-          (setq definition (jtags-recursive-tags-lookup identifiers surrounding-classes imports)))
-        (jtags-message "Recursive definition=%s" definition)
+          (setq definition (jtags-local-tags-lookup identifiers surrounding-classes imports))
+          (jtags-message "Local definition=%s" definition))
+        (unless definition
+          (setq definition (jtags-recursive-tags-lookup identifiers surrounding-classes imports))
+          (jtags-message "Recursive definition=%s" definition))
 
         ;; If we found a definition of the identifier
         (when definition
           ;; Get list of classes to look in
           (setq lookup-classes (jtags-get-class-list (if (jtags-type-p definition)
                                                          (jtags-definition-class definition)
-                                                       (jtags-definition-type definition))))
+                                                       (jtags-definition-type definition))
+                                                     (list (concat (jtags-definition-package definition)
+                                                                   "."
+                                                                   (jtags-definition-class definition)))))
           ;; (jtags-message "Look in classes=%s, surrounding classes=%s" lookup-classes surrounding-classes)
 
           ;; For each class in lookup-classes, lookup its members
@@ -1116,12 +1156,22 @@ means that you can call this function before creating the tags table files."
 
 Look up CLASS and an optional MEMBER in the tags table files.  If no MEMBER
 is provided, just look up the CLASS.  The optional argument PACKAGES is a
-list of package names, or fully qualified class names.  If specified, a check
-is made to verify that CLASS belongs to one of the packages in the list, see
-function `jtags-right-package-p'.
+list of package names, or fully qualified class names.  If specified, only
+identifiers that match a package in PACKAGES are considered.
 
 Looking up a constructor will work if CLASS is equal to MEMBER, and CLASS has
 a defined constructor.  Default constructors will not be looked up."
+  (let* ((key (list class member packages))
+         (value (gethash key jtags-lookup-identifier-cache)))
+    (unless value
+      (setq value (jtags-lookup-identifier-1 class member packages))
+      (puthash key value jtags-lookup-identifier-cache))
+    value))
+
+(defun jtags-lookup-identifier-1 (class &optional member packages)
+  "Look up an identifier in the tags table files, and return its DEFINITION.
+For a description of arguments CLASS, MEMBER, and PACKAGES, see function
+`jtags-lookup-identifier'."
   (save-excursion
     ;; (jtags-message "Class=`%s', member=`%s', packages=%S" class member packages)
 
@@ -1178,8 +1228,8 @@ a defined constructor.  Default constructors will not be looked up."
 (defun jtags-lookup-class-members (class &optional packages)
   "Return a list of all members in CLASS, or nil if CLASS is not found.
 The optional argument PACKAGES is a list of package names, or fully
-qualified class names.  If specified, a check is made to verify that CLASS
-belongs to one of the packages in the list, see `jtags-right-package-p'."
+qualified class names.  If specified, only identifiers that match a
+package in PACKAGES are considered."
   (save-excursion
     ;; (jtags-message "Class=`%s', packages=%S" class packages)
     (let ((case-fold-search nil)
@@ -1674,7 +1724,8 @@ current buffer.  The package names may, or may not end with \".*\"."
         ;; Ignore statement in comments and strings
         (unless (jtags-in-literal)
           (let* ((package-name (jtags-buffer-match-string 1))
-                 (clean-name (replace-regexp-in-string "[ \t\n]" "" package-name)))
+                 (temp-name (replace-regexp-in-string "[ \t\n]" "" package-name))
+                 (clean-name (replace-regexp-in-string "^static" "static " temp-name)))
             ;; (jtags-message "Package=`%s', cleaned=`%s'" package-name clean-name)
             (setq list (cons clean-name list)))))
       (delete-dups (nreverse list)))))

@@ -99,12 +99,10 @@ A nil value means that new imports will be added last in the list."
 (defun jtags-extras-match-index (list s)
   "Return index of first regexp in LIST that can match string S, or nil."
   (let ((index 0))
-    (block while-list
-      (while list
-        (if (string-match (car list) s)
-            (return-from while-list index))
-        (setq list (cdr list))
-        (setq index (1+ index))))))
+    (dolist (regexp list)
+      (if (string-match regexp s)
+          (return index))
+      (incf index))))
 
 ;; ----------------------------------------------------------------------------
 ;; Private variables:
@@ -316,24 +314,18 @@ considered."
 ;;       (jtags-message "Import order list=%S" jtags-extras-import-order-list)
       (narrow-to-region start end)
       (goto-char (point-min))
-      (if (and (not (featurep 'xemacs)) (< emacs-major-version 22))
-          (sort-subr nil
-                     'forward-line
-                     'end-of-line
-                     'jtags-extras-sort-import-startkeyfun
-                     nil)
-        (sort-subr nil
-                   'forward-line
-                   'end-of-line
-                   'jtags-extras-sort-import-startkeyfun
-                   nil
-                   'jtags-extras-sort-import-predicate)))))
+      (sort-subr nil
+                 'forward-line
+                 'end-of-line
+                 'jtags-extras-sort-import-startkeyfun
+                 nil
+                 'jtags-extras-sort-import-predicate))))
 
 (defun jtags-extras-sort-import-startkeyfun ()
   "Return the import statement sort key, i.e. the package name.
 Return a dummy string if this line is not an import statement."
   (if (re-search-forward "import[ \t]+\\([^\n;]*;\\)" (point-at-eol) t)
-      (buffer-substring-no-properties (match-beginning 1) (match-end 1))
+      (jtags-buffer-match-string 1)
     "zzzzz"))
 
 (defun jtags-extras-sort-import-predicate (import1 import2)
