@@ -3,10 +3,10 @@
 JTAGS
 
 
-Changes between versions 0.97 and 0.98.0 (TDB)
-----------------------------------------------
+Changes between versions 0.97 and 0.98.0 (2016-02-13)
+-----------------------------------------------------
 
-- Added support for Java 8 constructs: default methods, method references,
+- Added support for Java 8 constructs: default methods, method references, and
   lambdas.
 
 - Added support for static imports.
@@ -175,8 +175,8 @@ Changes between versions 0.91 and 0.92 (2001-09-10)
 JTAGS-EXTRAS
 
 
-Changes between versions 0.3.0 and 0.98.0 (TBD)
------------------------------------------------
+Changes between versions 0.3.0 and 0.98.0 (2016-02-13)
+------------------------------------------------------
 
 - Using internal jtags-in-literal instead of c-in-literal.
 

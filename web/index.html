@@ -12,6 +12,14 @@
     <h2>News</h2>
     <table width="100%" cellpadding="3">
       <tr valign="top" bgcolor="lavender">
+        <td nowrap="nowrap">2016-02-13</td>
+        <td>
+          Version 0.98.0 of jtags-mode has been released, adding support for
+          Java 8 constructs. Download it
+          <a href="http://sourceforge.net/project/showfiles.php?group_id=34232">here</a>.
+        </td>
+      </tr>
+      <tr valign="top" bgcolor="lavender">
         <td nowrap="nowrap">2016-01-18</td>
         <td>
           Version 0.97 has been released, after a long, long time. Among other
@@ -49,11 +57,11 @@
     <p>
       The jtags code acts as a middleware between Emacs and the etags program
       that is distributed with Emacs. Unlike the ordinary etags package, jtags
-      parses the Java source code to find the correct scope (i.e. the class
-      around point). It then looks up and shows the declaration of the
-      identifier, after finding the source code file in the tags table file.
-      This is possible since jtags knows some Java syntax and deals only with
-      Java source code.
+      parses the Java source code to find the correct context (e.g. the class
+      around point, and any preceing expression). It then looks up and shows
+      the declaration of the identifier, after finding the source code file in
+      the tags table files. This is possible since jtags knows some Java syntax
+      and deals only with Java source code.
     </p>
 
     <h2>Features</h2>
@@ -72,7 +80,9 @@
       <code>Bar</code>, and the methods <code>getInstance()</code> and
       <code>foo()</code>. Using this information, jtags finds out in which
       source code file the method <code>toString()</code> is declared, loads
-      the file, and displays the declaration.
+      the file, and displays the declaration. Local variables and method
+      parameters can also be looked up, even though these are not included in
+      the tags table files.
     </p>
 
     <p><b>Showing the Javadoc for an identifier</b></p>
@@ -144,9 +154,9 @@
     <p>
       Download the latest <i>release</i> version of jtags-mode
       <a href="http://sourceforge.net/project/showfiles.php?group_id=34232">here</a>.
-      Installation notes are included within the Emacs Lisp file itself.
-      GNU Emacs users can also download and install jtags-mode from
-      <a href="http://melpa.org">MELPA</a>.
+      Installation notes are included within the Emacs Lisp file itself. If you
+      are using GNU Emacs 24 or later, you can also download and install
+      jtags-mode from <a href="http://melpa.org">MELPA</a>.
     </p>
 
     <p>
@@ -162,11 +172,10 @@
         </td>
         <td class="Footer" align="center">
           <a href="http://sourceforge.net/projects/jtags">
-            <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=34232&amp;type=12" width="120" height="30" alt="Get jtags - Emacs package for editing Java at SourceForge.net. Fast, secure and Free Open Source software downloads" />
-          </a>
+            <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=34232&amp;type=12" width="120" height="30" alt="Get jtags - Emacs package for editing Java at SourceForge.net. Fast, secure and Free Open Source software downloads"/></a>
         </td>
         <td class="Footer" align="right">
-          <!-- hhmts start -->Last modified: 2016-01-18 16:06:44<!-- hhmts end -->
+          <!-- hhmts start -->Last modified: 2016-02-13 20:47:03<!-- hhmts end -->
         </td>
       </tr>
     </table>
